@@ -2,7 +2,7 @@
 
 
 
-1. Create a s3 bucket of your choice of name
+1. Create a S3 bucket of your choice of name
 2. Download the Lambda1.zip and Lambda2.zip files for from this repo
 3. Upload the Lambda1.zip and Lambda2.zip files to newly created s3 Bucket
 4. Run the Cloud Formation Template `Main-CF-Template.json`
