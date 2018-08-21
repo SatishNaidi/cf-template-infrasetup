@@ -1,0 +1,1359 @@
+{
+  "Description": "To Create VPCs, along with 2 Private and 2 Public Subnets",
+  "Metadata" : {
+    "AWS::CloudFormation::Interface" : {
+      "ParameterGroups" : [
+        {
+          "Label" : { "default" : "Project and Tag" },
+          "Parameters" : [ "aProjectName"]
+        },
+        {
+          "Label" : { "default" : "VPC Configuration" },
+          "Parameters" : [ "VpcCIDR", "AZs", "PublicSubnet1CIDR","PublicSubnet2CIDR","PrivateSubnet1CIDR","PrivateSubnet2CIDR" ]
+        },
+        {
+          "Label" : { "default":"Buckets Configuation" },
+          "Parameters" : [ "BucketName", "MoveToGlacierAfrDays", "DeleteFromGlacierAfrDays"]
+        },
+        {
+          "Label" : { "default":"IAM Configuration" },
+          "Parameters" : [ "Password"]
+        },
+        {
+          "Label" : { "default":"EC2 Configuration" },
+          "Parameters" : [ "SSHKeyName"]
+        },
+        {
+          "Label" : { "default":"CloudTrail Configuration" },
+          "Parameters" : [ "OperatorEmail"]
+        },
+        {
+          "Label" : { "default":"Lambda Configuration" },
+          "Parameters" : [ "BucketForLambdaCode","Lambda1FileName","Lambda2FileName" ]
+        }
+      ]
+    }
+  },
+  "Parameters": {
+    "aProjectName": {
+      "Description": "Project Name, STaaS",
+      "Type": "String",
+      "Default": "STaaS"
+    },
+    "VpcCIDR": {
+      "Description": "CIDR for the VPC",
+      "Type": "String",
+      "Default": "10.192.0.0/16"
+    },
+    "AZs": {
+      "Type": "List<AWS::EC2::AvailabilityZone::Name>",
+      "Default": "us-east-1a,us-east-1b",
+      "Description": "Select Two AZs, where the Public and Private Subnets will be deployed."
+    },
+    "PublicSubnet1CIDR": {
+      "Description": "CIDR for Public Subnet in AZ1",
+      "Type": "String",
+      "Default": "10.192.10.0/24"
+    },
+    "PublicSubnet2CIDR": {
+      "Description": "CIDR for Public Subnet in AZ2",
+      "Type": "String",
+      "Default": "10.192.11.0/24"
+    },
+    "PrivateSubnet1CIDR": {
+      "Description": "CIDR for private Subnet in AZ1",
+      "Type": "String",
+      "Default": "10.192.20.0/24"
+    },
+    "PrivateSubnet2CIDR": {
+      "Description": "CIDR for private Subnet in AZ2",
+      "Type": "String",
+      "Default": "10.192.21.0/24"
+    },
+    "SSHKeyName": {
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+    },
+    "BucketName": {
+      "Default": "mydata",
+      "Description": "Enter a Name for the first bucket S3 bucket",
+      "Type": "String"
+    },
+    "MoveToGlacierAfrDays": {
+      "Default": "30",
+      "Description": "Enter the number of day to move the file to glacier",
+      "Type": "Number"
+    },
+    "DeleteFromGlacierAfrDays": {
+      "Default": "90",
+      "Description": "Enter the number of days to Delete the files from glacier",
+      "Type": "Number"
+    },
+    "OperatorEmail": {
+      "Description": "Email address to notify when new logs are published.",
+      "Default":"SatishNaidi@gmail.com",
+      "Type": "String"
+    },
+    "BucketForLambdaCode": {
+      "Description": "Select the bucket name where the lamdba fucntion code resides",
+      "Default":"aws-saketh-lambda",
+      "Type": "String"
+    },
+    "Lambda1FileName": {
+      "Description": "Select the Key name in the bucket to consume the code, Code Should be uploaded to Bucker Prior",
+      "Default":"Test.zip",
+      "Type": "String"
+    },
+    "Lambda2FileName": {
+      "Description": "Select the Key name in the bucket to consume the code, Code Should be uploaded to Bucker Prior",
+      "Type": "String"
+    },
+    "Password": {
+      "NoEcho": "true",
+      "Default": "HelloWorld123@9Id",
+      "Type": "String",
+      "Description": "New account password",
+      "MinLength": "1",
+      "MaxLength": "41",
+      "ConstraintDescription": "Please refer to IAM Password Policy in your account"
+    }
+  },
+  "Resources": {
+    "S3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "Id": "GlacierRule",
+              "Status": "Enabled",
+              "NoncurrentVersionTransitions": [
+                {
+                  "StorageClass": "GLACIER",
+                  "TransitionInDays": 1
+                }
+              ],
+              "ExpirationInDays": "700",
+              "Transitions": [
+                {
+                  "TransitionInDays": {
+                    "Ref": "MoveToGlacierAfrDays"
+                  },
+                  "StorageClass": "Glacier"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "BucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "S3Bucket"
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AWSCloudTrailAclCheck",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "cloudtrail.amazonaws.com"
+              },
+              "Action": "s3:GetBucketAcl",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "S3Bucket"
+                    }
+                  ]
+                ]
+              }
+            },
+            {
+              "Sid": "AWSCloudTrailWrite",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "cloudtrail.amazonaws.com"
+              },
+              "Action": "s3:PutObject",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "S3Bucket"
+                    },
+                    "/AWSLogs/",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    "/*"
+                  ]
+                ]
+              },
+              "Condition": {
+                "StringEquals": {
+                  "s3:x-amz-acl": "bucket-owner-full-control"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "Topic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "Subscription": [
+          {
+            "Endpoint": {
+              "Ref": "OperatorEmail"
+            },
+            "Protocol": "email"
+          }
+        ]
+      }
+    },
+    "TopicPolicy": {
+      "Type": "AWS::SNS::TopicPolicy",
+      "Properties": {
+        "Topics": [
+          {
+            "Ref": "Topic"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "AWSCloudTrailSNSPolicy",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "cloudtrail.amazonaws.com"
+              },
+              "Resource": "*",
+              "Action": "SNS:Publish"
+            }
+          ]
+        }
+      }
+    },
+    "myTrail": {
+      "DependsOn": [
+        "BucketPolicy",
+        "TopicPolicy"
+      ],
+      "Type": "AWS::CloudTrail::Trail",
+      "Properties": {
+        "S3BucketName": {
+          "Ref": "S3Bucket"
+        },
+        "SnsTopicName": {
+          "Fn::GetAtt": [
+            "Topic",
+            "TopicName"
+          ]
+        },
+        "IsLogging": true
+      }
+    },
+    "VPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": {
+          "Ref": "VpcCIDR"
+        },
+        "EnableDnsSupport": true,
+        "EnableDnsHostnames": true,
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Ref": "aProjectName"
+            }
+          }
+        ]
+      }
+    },
+    "InternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Ref": "aProjectName"
+            }
+          }
+        ]
+      }
+    },
+    "InternetGatewayAttachment": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "InternetGatewayId": {
+          "Ref": "InternetGateway"
+        },
+        "VpcId": {
+          "Ref": "VPC"
+        }
+      }
+    },
+    "PublicSubnet1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "AvailabilityZone": {
+          "Fn::Select": [
+            "0",
+            {
+              "Ref": "AZs"
+            }
+          ]
+        },
+        "CidrBlock": {
+          "Ref": "PublicSubnet1CIDR"
+        },
+        "MapPublicIpOnLaunch": true,
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Sub": "${aProjectName} Public Subnet (AZ1)"
+            }
+          }
+        ]
+      }
+    },
+    "PublicSubnet2": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "AvailabilityZone": {
+          "Fn::Select": [
+            "1",
+            {
+              "Ref": "AZs"
+            }
+          ]
+        },
+        "CidrBlock": {
+          "Ref": "PublicSubnet2CIDR"
+        },
+        "MapPublicIpOnLaunch": true,
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Sub": "${aProjectName} Public Subnet (AZ2)"
+            }
+          }
+        ]
+      }
+    },
+    "PrivateSubnet1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "AvailabilityZone": {
+          "Fn::Select": [
+            "0",
+            {
+              "Ref": "AZs"
+            }
+          ]
+        },
+        "CidrBlock": {
+          "Ref": "PrivateSubnet1CIDR"
+        },
+        "MapPublicIpOnLaunch": false,
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Sub": "${aProjectName} Private Subnet (AZ1)"
+            }
+          }
+        ]
+      }
+    },
+    "PrivateSubnet2": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "AvailabilityZone": {
+          "Fn::Select": [
+            "1",
+            {
+              "Ref": "AZs"
+            }
+          ]
+        },
+        "CidrBlock": {
+          "Ref": "PrivateSubnet2CIDR"
+        },
+        "MapPublicIpOnLaunch": false,
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Sub": "${aProjectName} Private Subnet (AZ2)"
+            }
+          }
+        ]
+      }
+    },
+    "NatGateway1EIP": {
+      "Type": "AWS::EC2::EIP",
+      "DependsOn": "InternetGatewayAttachment",
+      "Properties": {
+        "Domain": "vpc"
+      }
+    },
+    "NatGateway2EIP": {
+      "Type": "AWS::EC2::EIP",
+      "DependsOn": "InternetGatewayAttachment",
+      "Properties": {
+        "Domain": "vpc"
+      }
+    },
+    "NatGateway1": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "NatGateway1EIP",
+            "AllocationId"
+          ]
+        },
+        "SubnetId": {
+          "Ref": "PublicSubnet1"
+        }
+      }
+    },
+    "NatGateway2": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "NatGateway2EIP",
+            "AllocationId"
+          ]
+        },
+        "SubnetId": {
+          "Ref": "PublicSubnet2"
+        }
+      }
+    },
+    "PublicRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Sub": "${aProjectName} Public Routes"
+            }
+          }
+        ]
+      }
+    },
+    "DefaultPublicRoute": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": "InternetGatewayAttachment",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PublicRouteTable"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "InternetGateway"
+        }
+      }
+    },
+    "PublicSubnet1RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PublicRouteTable"
+        },
+        "SubnetId": {
+          "Ref": "PublicSubnet1"
+        }
+      }
+    },
+    "PublicSubnet2RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PublicRouteTable"
+        },
+        "SubnetId": {
+          "Ref": "PublicSubnet2"
+        }
+      }
+    },
+    "PrivateRouteTable1": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Sub": "${aProjectName} Private Routes (AZ1)"
+            }
+          }
+        ]
+      }
+    },
+    "DefaultPrivateRoute1": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTable1"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "NatGateway1"
+        }
+      }
+    },
+    "PrivateSubnet1RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTable1"
+        },
+        "SubnetId": {
+          "Ref": "PrivateSubnet1"
+        }
+      }
+    },
+    "PrivateRouteTable2": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Sub": "${aProjectName} Private Routes (AZ2)"
+            }
+          }
+        ]
+      }
+    },
+    "DefaultPrivateRoute2": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTable2"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "NatGateway2"
+        }
+      }
+    },
+    "PrivateSubnet2RouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PrivateRouteTable2"
+        },
+        "SubnetId": {
+          "Ref": "PrivateSubnet2"
+        }
+      }
+    },
+    "InstanceSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Allow HTTP and SSH traffic Host attached",
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "1",
+            "ToPort": "65535",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ]
+      }
+    },
+    "DataBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": {
+          "Fn::Join": [
+            "-",
+            [
+              {
+                "Ref": "BucketName"
+              },
+              "data",
+              {
+                "Ref": "AWS::StackName"
+              }
+            ]
+          ]
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "Id": "GlacierRule",
+              "Status": "Enabled",
+              "NoncurrentVersionTransitions": [
+                {
+                  "StorageClass": "GLACIER",
+                  "TransitionInDays": 1
+                }
+              ],
+              "ExpirationInDays": {
+                "Ref": "DeleteFromGlacierAfrDays"
+              },
+              "Transitions": [
+                {
+                  "TransitionInDays": {
+                    "Ref": "MoveToGlacierAfrDays"
+                  },
+                  "StorageClass": "Glacier"
+                }
+              ]
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": {
+              "Fn::Sub": "${aProjectName}"
+            }
+          }
+        ],
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        },
+        "LoggingConfiguration": {
+          "DestinationBucketName": {
+            "Ref": "LoggingBucket"
+          },
+          "LogFilePrefix": "access-logs"
+        }
+      }
+    },
+    "LoggingBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": {
+          "Fn::Join": [
+            "-",
+            [
+              {
+                "Ref": "BucketName"
+              },
+              "access-log",
+              {
+                "Ref": "AWS::StackName"
+              }
+            ]
+          ]
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "Id": "GlacierRule",
+              "Status": "Enabled",
+              "NoncurrentVersionTransitions": [
+                {
+                  "StorageClass": "GLACIER",
+                  "TransitionInDays": 1
+                }
+              ],
+              "ExpirationInDays": {
+                "Ref": "DeleteFromGlacierAfrDays"
+              },
+              "Transitions": [
+                {
+                  "TransitionInDays": {
+                    "Ref": "MoveToGlacierAfrDays"
+                  },
+                  "StorageClass": "Glacier"
+                }
+              ]
+            }
+          ]
+        },
+        "AccessControl": "LogDeliveryWrite"
+      }
+    },
+
+    "S3Endpoint" : {
+      "Type" : "AWS::EC2::VPCEndpoint",
+      "Properties" : {
+        "PolicyDocument" : {
+          "Version":"2012-10-17",
+          "Statement":[{
+            "Effect":"Allow",
+            "Principal": "*",
+            "Action":["s3:GetObject"],
+            "Resource": [ 
+              { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "DataBucket"},"/*"]]},
+              { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "LoggingBucket"},"/*"]]},
+              { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "S3Bucket"},"/*"]]}
+            
+          ]
+          }]
+        },
+        "RouteTableIds" : [ 
+          {"Ref": "PublicRouteTable"},
+          {"Ref": "PrivateRouteTable1"},
+          {"Ref": "PrivateRouteTable2"}
+         ],
+        "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".s3" ] ] },
+        "VpcId" : {"Ref": "VPC"}
+      }
+    },
+
+    "DoDUser": {
+      "Type": "AWS::IAM::User",
+      "Properties": {
+        "LoginProfile": {
+          "Password": {
+            "Ref": "Password"
+          }
+        }
+      }
+    },
+    "DoDUserGroup": {
+      "Type": "AWS::IAM::Group"
+    },
+    "Users1": {
+      "Type": "AWS::IAM::UserToGroupAddition",
+      "Properties": {
+        "GroupName": {
+          "Ref": "DoDUserGroup"
+        },
+        "Users": [
+          {
+            "Ref": "DoDUser"
+          }
+        ]
+      }
+    },
+    "DoDUserPolicies": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "DoDUsers",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:ListAllMyBuckets"
+              ],
+              "Resource": "arn:aws:s3:::*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:ListBucket",
+                "s3:GetBucketLocation"
+              ],
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "DataBucket"
+                      }
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:PutObject",
+                "s3:PutObjectAcl",
+                "s3:GetObject",
+                "s3:GetObjectAcl",
+                "s3:DeleteObject"
+              ],
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "DataBucket"
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "Groups": [
+          {
+            "Ref": "DoDUserGroup"
+          }
+        ]
+      }
+    },
+    "DoDKeys": {
+      "Type": "AWS::IAM::AccessKey",
+      "Properties": {
+        "UserName": {
+          "Ref": "DoDUser"
+        }
+      }
+    },
+    "Admin1User": {
+      "Type": "AWS::IAM::User",
+      "Properties": {
+        "LoginProfile": {
+          "Password": {
+            "Ref": "Password"
+          }
+        }
+      }
+    },
+    "Admin1UserGroup": {
+      "Type": "AWS::IAM::Group"
+    },
+    "Users2": {
+      "Type": "AWS::IAM::UserToGroupAddition",
+      "Properties": {
+        "GroupName": {
+          "Ref": "Admin1UserGroup"
+        },
+        "Users": [
+          {
+            "Ref": "Admin1User"
+          }
+        ]
+      }
+    },
+    "Admin1UserPolicies": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "Admin1Users",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:ListAllMyBuckets"
+              ],
+              "Resource": "arn:aws:s3:::*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:ListBucket",
+                "s3:GetBucketLocation"
+              ],
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "DataBucket"
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "LoggingBucket"
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "S3Bucket"
+                      }
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:PutObject",
+                "s3:PutObjectAcl",
+                "s3:GetObject",
+                "s3:GetObjectAcl",
+                "s3:DeleteObject"
+              ],
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "DataBucket"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "LoggingBucket"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "S3Bucket"
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "Groups": [
+          {
+            "Ref": "Admin1UserGroup"
+          }
+        ]
+      }
+    },
+    "Admin1Keys": {
+      "Type": "AWS::IAM::AccessKey",
+      "Properties": {
+        "UserName": {
+          "Ref": "Admin1User"
+        }
+      }
+    },
+    "SecurityUser": {
+      "Type": "AWS::IAM::User",
+      "Properties": {
+        "LoginProfile": {
+          "Password": {
+            "Ref": "Password"
+          }
+        }
+      }
+    },
+    "SecurityUserGroup": {
+      "Type": "AWS::IAM::Group"
+    },
+    "Users3": {
+      "Type": "AWS::IAM::UserToGroupAddition",
+      "Properties": {
+        "GroupName": {
+          "Ref": "SecurityUserGroup"
+        },
+        "Users": [
+          {
+            "Ref": "SecurityUser"
+          }
+        ]
+      }
+    },
+    "SecurityUserPolicies": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "SecurityUsers",
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:ListAllMyBuckets"
+              ],
+              "Resource": "arn:aws:s3:::*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:ListBucket",
+                "s3:GetBucketLocation"
+              ],
+              "Resource": [
+                { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "S3Bucket"}]]}
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:PutObject",
+                "s3:PutObjectAcl",
+                "s3:GetObject",
+                "s3:GetObjectAcl",
+                "s3:DeleteObject"
+              ],
+              "Resource": [
+                { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "S3Bucket"},"/*"]]}
+              ]
+            }
+          ]
+        },
+        "Groups": [
+          {
+            "Ref": "SecurityUserGroup"
+          }
+        ]
+      }
+    },
+    "SecurityKeys": {
+      "Type": "AWS::IAM::AccessKey",
+      "Properties": {
+        "UserName": {
+          "Ref": "SecurityUser"
+        }
+      }
+    },
+    "MySplunkInstance1": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": "ami-cfe4b2b0",
+        "KeyName": {
+          "Ref": "SSHKeyName"
+        },
+        "SubnetId": {
+          "Ref": "PrivateSubnet1"
+        },
+        "InstanceType": "t2.micro",
+        "SecurityGroupIds": [
+          {
+            "Ref": "InstanceSecurityGroup"
+          }
+        ]
+      }
+    },
+    "MySplunkInstance2": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": "ami-cfe4b2b0",
+        "KeyName": {
+          "Ref": "SSHKeyName"
+        },
+        "SubnetId": {
+          "Ref": "PrivateSubnet2"
+        },
+        "InstanceType": "t2.micro",
+        "SecurityGroupIds": [
+          {
+            "Ref": "InstanceSecurityGroup"
+          }
+        ]
+      }
+    },
+    "LambdaExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "lambda-execution-policy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                  {
+                      "Effect": "Allow",
+                      "Action": "logs:CreateLogGroup",
+                      "Resource": "*"
+                  },
+                  {
+                      "Effect": "Allow",
+                      "Action": [
+                          "logs:CreateLogStream",
+                          "logs:PutLogEvents"
+                      ],
+                      "Resource":"*"
+                  }
+              ]
+          }
+          }
+        ]
+      }
+    },
+    "MyLambda1": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+          "Code": {
+              "S3Bucket":  { "Ref": "BucketForLambdaCode" },
+              "S3Key": { "Ref": "Lambda1FileName" }
+          },
+          "FunctionName": "Lambda1",
+          "MemorySize": 128,
+          "Handler": "lambda_function.lambda_handler",
+          "Role": {"Fn::GetAtt" : ["LambdaExecutionRole", "Arn"] },
+          "Timeout": 3,
+          "Runtime": "python2.7",
+          "Description": "My Testing 1"
+      }
+  },
+  "MyLambda2": {
+    "Type": "AWS::Lambda::Function",
+    "Properties": {
+        "Code": {
+            "S3Bucket":  { "Ref": "BucketForLambdaCode" },
+            "S3Key": { "Ref": "Lambda2FileName" }
+        },
+        "FunctionName": "Lambda2",
+        "MemorySize": 128,
+        "Handler": "lambda_function.lambda_handler",
+        "Role": {"Fn::GetAtt" : ["LambdaExecutionRole", "Arn"] },
+        "Timeout": 3,
+        "Runtime": "python2.7",
+        "Description": "My Testing 2"
+    }
+}
+  },
+  "Outputs": {
+    "VPC": {
+      "Description": "A reference to the created VPC",
+      "Value": {
+        "Ref": "VPC"
+      }
+    },
+    "PublicSubnets": {
+      "Description": "A list of the public subnets",
+      "Value": {
+        "Fn::Join": [
+          ", ",
+          [
+            {
+              "Ref": "PublicSubnet1"
+            },
+            {
+              "Ref": "PublicSubnet2"
+            }
+          ]
+        ]
+      }
+    },
+    "PrivateSubnets": {
+      "Description": "A list of the private subnets",
+      "Value": {
+        "Fn::Join": [
+          ", ",
+          [
+            {
+              "Ref": "PrivateSubnet1"
+            },
+            {
+              "Ref": "PrivateSubnet2"
+            }
+          ]
+        ]
+      }
+    },
+    "PublicSubnet1": {
+      "Description": "A reference to the public subnet in the 1st Availability Zone",
+      "Value": {
+        "Ref": "PublicSubnet1"
+      }
+    },
+    "PublicSubnet2": {
+      "Description": "A reference to the public subnet in the 2nd Availability Zone",
+      "Value": {
+        "Ref": "PublicSubnet2"
+      }
+    },
+    "PrivateSubnet1": {
+      "Description": "A reference to the private subnet in the 1st Availability Zone",
+      "Value": {
+        "Ref": "PrivateSubnet1"
+      }
+    },
+    "PrivateSubnet2": {
+      "Description": "A reference to the private subnet in the 2nd Availability Zone",
+      "Value": {
+        "Ref": "PrivateSubnet2"
+      }
+    },
+    "InstanceSecurityGroup": {
+      "Description": "Allow HTTP and SSH traffic Host attached",
+      "Value": {
+        "Ref": "InstanceSecurityGroup"
+      }
+    },
+    "DataBucketName": {
+      "Value": {
+        "Ref": "DataBucket"
+      },
+      "Description": "Name of the sample Amazon S3 bucket with a logging configuration.\n Enable with Default AES256"
+    },
+    "LoggingBucketName": {
+      "Value": {
+        "Ref": "LoggingBucket"
+      },
+      "Description": "Name of the sample Amazon S3 bucket with a logging configuration.\n Enable with Default AES256"
+    },
+    "DoDAccessKey": {
+      "Value": {
+        "Ref": "DoDKeys"
+      },
+      "Description": "AWSAccessKeyId of new user"
+    },
+    "DoDSecretKey": {
+      "Value": {
+        "Fn::GetAtt": [
+          "DoDKeys",
+          "SecretAccessKey"
+        ]
+      },
+      "Description": "AWSSecretKey of new user"
+    },
+    "Admin1AccessKey": {
+      "Value": {
+        "Ref": "Admin1Keys"
+      },
+      "Description": "AWSAccessKeyId of new user"
+    },
+    "Admin1SecretKey": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Admin1Keys",
+          "SecretAccessKey"
+        ]
+      },
+      "Description": "AWSSecretKey of new user"
+    },
+    "SecurityAccessKey": {
+      "Value": {
+        "Ref": "SecurityKeys"
+      },
+      "Description": "AWSAccessKeyId of new user"
+    },
+    "SecuritySecretKey": {
+      "Value": {
+        "Fn::GetAtt": [
+          "SecurityKeys",
+          "SecretAccessKey"
+        ]
+      },
+      "Description": "AWSSecretKey of new user"
+    },
+    "Lambda1": {
+      "Value": {
+        "Ref": "MyLambda1"
+      },
+      "Description": "Lambda1"
+    },
+    "Lambda2": {
+      "Value": {
+        "Ref": "MyLambda1"
+      },
+      "Description": "Lambda2"
+    }
+  }
+}
