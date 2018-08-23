@@ -3,8 +3,8 @@
 
 
 1. Create a S3 bucket of your choice of name
-2. Download the Lambda1.zip and Lambda2.zip files for from this repo
-3. Upload the Lambda1.zip and Lambda2.zip files to newly created s3 Bucket
+2. Download the `snaphot_deletion_lambda.zip` and `lambda_snapshot.zip` files for from this repo
+3. Upload the `snaphot_deletion_lambda.zip` and `lambda_snapshot.zip` files to newly created s3 Bucket
 4. Run the Cloud Formation Template `Main-CF-Template.json`
   * For Cloud Formation Template Input Parameters under "Lambda Configuration" section
       * BucketForLambdaCode use `newly created S3 Bucket Name`
