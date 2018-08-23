@@ -8,6 +8,6 @@
 4. Run the Cloud Formation Template `Main-CF-Template.json`
   * For Cloud Formation Template Input Parameters under "Lambda Configuration" section
       * BucketForLambdaCode use `newly created S3 Bucket Name`
-      * Lambda1FileName use `Lambda1.zip`
-      * Lambda1FileName use `Lambda2.zip`
+      * Lambda1FileName use `snaphot_deletion_lambda.zip`
+      * Lambda1FileName use `lambda_snapshot.zip`
 

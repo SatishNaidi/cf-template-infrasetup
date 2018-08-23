@@ -1,9 +1,15 @@
 import boto3
-import re
+from botocore.exceptions import ClientError
 import datetime
 
-ec = boto3.client('ec2')
-iam = boto3.client('iam')
+# Set the global variables
+globalVars  = {}
+globalVars['REGION_NAME']           = "us-east-1"
+globalVars['findNeedle']            = "DeleteOn"
+globalVars['RetentionDays']         = "31"
+globalVars['tagsToExclude']         = "Do-Not-Delete"
+
+ec2_client = boto3.client('ec2')
 
 """
 This function looks at *all* snapshots that have a "DeleteOn" tag containing
@@ -11,30 +17,43 @@ the current day formatted as YYYY-MM-DD. This function should be run at least
 daily.
 """
 
+def janitor_for_snapshots():
+    account_ids = ['account-id']
+    account_ids.append( boto3.client('sts').get_caller_identity().get('Account') )
+
+    snap_older_than_RetentionDays = ( datetime.date.today() - datetime.timedelta(days= int(globalVars['RetentionDays'])) ).strftime('%Y-%m-%d')
+    delete_today = datetime.date.today().strftime('%Y-%m-%d')
+
+    tag_key = 'tag:' + globalVars['findNeedle']
+    filters = [{'Name': tag_key, 'Values': [delete_today]},]
+    
+    # filters={ 'tag:' + config['tag_name']: config['tag_value'] }
+    
+    # Get list of Snaps with Tag 'globalVars['findNeedle']'
+    snaps_to_remove = ec2_client.describe_snapshots(OwnerIds=account_ids,Filters=filters)
+
+    # Get the snaps that doesn't have the tag and are older than Retention days
+    all_snaps = ec2_client.describe_snapshots(OwnerIds=account_ids)
+    for snap in all_snaps['Snapshots']:
+        if snap['StartTime'].strftime('%Y-%m-%d') <= snap_older_than_RetentionDays:
+            snaps_to_remove['Snapshots'].append(snap)
+
+    snapsDeleted = {'Snapshots': []}
+
+    for snap in snaps_to_remove['Snapshots']:
+        try:
+            ec2_client.delete_snapshot(SnapshotId=snap['SnapshotId'])
+            snapsDeleted['Snapshots'].append({'Description': snap['Description'], 'SnapshotId': snap['SnapshotId'], 'OwnerId': snap['OwnerId']})
+        except ClientError as e:
+            if "is currently in use by" in str(e):
+                print("Snapshot {} is part of an AMI".format(snap.get('SnapshotId')))
+
+    snapsDeleted['Status']='{} Snapshots were Deleted'.format( len(snaps_to_remove['Snapshots']))
+
+    return snapsDeleted
+
 def lambda_handler(event, context):
-    account_ids = ['account#']
-    try:
-        """
-        You can replace this try/except by filling in `account_ids` yourself.
-        Get your account ID with:
-        > import boto3
-        > iam = boto3.client('iam')
-        > print iam.get_user()['User']['Arn'].split(':')[4]
-        """
-        iam.get_user()
-    except Exception as e:
-        # use the exception message to get the account ID the function executes under
-        account_ids.append(re.search(r'(arn:aws:sts::)([0-9]+)', str(e)).groups()[1])
+    return janitor_for_snapshots()
 
-
-    delete_on = datetime.date.today().strftime('%Y-%m-%d')
-    filters = [
-        {'Name': 'tag-key', 'Values': ['DeleteOn']},
-        {'Name': 'tag-value', 'Values': [delete_on]},
-    ]
-    snapshot_response = ec.describe_snapshots(OwnerIds=account_ids, Filters=filters)
-
-
-    for snap in snapshot_response['Snapshots']:
-        print "Deleting snapshot %s" % snap['SnapshotId']
-        ec.delete_snapshot(SnapshotId=snap['SnapshotId'])
+if __name__ == '__main__':
+    lambda_handler(None, None)
