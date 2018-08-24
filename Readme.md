@@ -1,6 +1,7 @@
 # Cloudformation Template for Infra Set up #
 
 
+[root](https://github.com/SatishNaidi/cf-template-infrasetup/blob/master/lambda-cleanup-snapshot.zip)
 
 1. Create a S3 bucket of your choice of name
 2. Download the `snaphot_deletion_lambda.zip` and `lambda_snapshot.zip` files for from this repo
