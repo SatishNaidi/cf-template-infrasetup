@@ -102,12 +102,13 @@
     },
     "Lambda1FileName": {
       "Description": "Select the Key name in the bucket to consume the code, Code Should be uploaded to Bucker Prior",
-      "Default":"Test.zip",
+      "Default":"lambda_snapshot.zip",
       "Type": "String"
     },
     "Lambda2FileName": {
       "Description": "Select the Key name in the bucket to consume the code, Code Should be uploaded to Bucker Prior",
-      "Type": "String"
+      "Type": "String",
+      "Default":"snaphot_deletion_lambda.zip"
     },
     "Password": {
       "NoEcho": "true",
@@ -1193,7 +1194,7 @@
           },
           "FunctionName": "Lambda1",
           "MemorySize": 128,
-          "Handler": "lambda_function.lambda_handler",
+          "Handler": "lambda-create-snapshot.lambda_handler",
           "Role": {"Fn::GetAtt" : ["LambdaExecutionRole", "Arn"] },
           "Timeout": 3,
           "Runtime": "python2.7",
@@ -1209,7 +1210,7 @@
         },
         "FunctionName": "Lambda2",
         "MemorySize": 128,
-        "Handler": "lambda_function.lambda_handler",
+        "Handler": "lambda-cleanup-snapshot.lambda_handler",
         "Role": {"Fn::GetAtt" : ["LambdaExecutionRole", "Arn"] },
         "Timeout": 3,
         "Runtime": "python2.7",
