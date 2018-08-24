@@ -29,7 +29,7 @@
         },
         {
           "Label" : { "default":"Lambda Configuration" },
-          "Parameters" : [ "BucketForLambdaCode","Lambda1FileName","Lambda2FileName" ]
+          "Parameters" : [ "BucketForLambdaCode","CleanupSnapShotCode","CreateSnapShotCode" ]
         }
       ]
     }
@@ -100,15 +100,15 @@
       "Default":"aws-saketh-lambda",
       "Type": "String"
     },
-    "Lambda1FileName": {
+    "CleanupSnapShotCode": {
       "Description": "Select the Key name in the bucket to consume the code, Code Should be uploaded to Bucker Prior",
-      "Default":"lambda_snapshot.zip",
+      "Default":"lambda-cleanup-snapshot.zip",
       "Type": "String"
     },
-    "Lambda2FileName": {
+    "CreateSnapShotCode": {
       "Description": "Select the Key name in the bucket to consume the code, Code Should be uploaded to Bucker Prior",
       "Type": "String",
-      "Default":"snaphot_deletion_lambda.zip"
+      "Default":"lambda-create-snapshot.zip"
     },
     "Password": {
       "NoEcho": "true",
@@ -1190,15 +1190,15 @@
       "Properties": {
           "Code": {
               "S3Bucket":  { "Ref": "BucketForLambdaCode" },
-              "S3Key": { "Ref": "Lambda1FileName" }
+              "S3Key": { "Ref": "CleanupSnapShotCode" }
           },
-          "FunctionName": "Lambda1",
+          "FunctionName": "lambda-cleanup-snapshot",
           "MemorySize": 128,
-          "Handler": "lambda-create-snapshot.lambda_handler",
+          "Handler": "lambda-cleanup-snapshot.lambda_handler",
           "Role": {"Fn::GetAtt" : ["LambdaExecutionRole", "Arn"] },
           "Timeout": 3,
           "Runtime": "python2.7",
-          "Description": "My Testing 1"
+          "Description": "lambda-cleanup-snapshot"
       }
   },
   "MyLambda2": {
@@ -1206,15 +1206,15 @@
     "Properties": {
         "Code": {
             "S3Bucket":  { "Ref": "BucketForLambdaCode" },
-            "S3Key": { "Ref": "Lambda2FileName" }
+            "S3Key": { "Ref": "CreateSnapShotCode" }
         },
-        "FunctionName": "Lambda2",
+        "FunctionName": "lambda-create-snapshot",
         "MemorySize": 128,
-        "Handler": "lambda-cleanup-snapshot.lambda_handler",
+        "Handler": "lambda-create-snapshot.lambda_handler",
         "Role": {"Fn::GetAtt" : ["LambdaExecutionRole", "Arn"] },
         "Timeout": 3,
         "Runtime": "python2.7",
-        "Description": "My Testing 2"
+        "Description": "lambda-cleanup-snapshot"
     }
 }
   },
