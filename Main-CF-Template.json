@@ -1201,7 +1201,7 @@
           "Description": "lambda-cleanup-snapshot"
       }
   },
-  "MyLambda2": {
+  "MyLambda2": {  
     "Type": "AWS::Lambda::Function",
     "Properties": {
         "Code": {
@@ -1215,8 +1215,43 @@
         "Timeout": 3,
         "Runtime": "python2.7",
         "Description": "lambda-cleanup-snapshot"
+      }
+    },
+    "ScheduledRule": {
+      "Type": "AWS::Events::Rule",
+      "Properties": {
+        "Description": "ScheduledRule",
+        "ScheduleExpression": "rate(1 day)",
+        "State": "ENABLED",
+        "Targets": [{
+          "Arn": { "Fn::GetAtt": ["MyLambda1", "Arn"] },
+          "Id": {"Ref":"MyLambda1"}
+        },
+        {
+          "Arn": { "Fn::GetAtt": ["MyLambda2", "Arn"] },
+          "Id": {"Ref":"MyLambda2"}
+        }
+      ]
+      }
+    },
+    "PermissionForEventsToInvokeLambda1": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {"Ref":"MyLambda1"},
+        "Action": "lambda:InvokeFunction",
+        "Principal": "events.amazonaws.com",
+        "SourceArn": { "Fn::GetAtt": ["ScheduledRule", "Arn"] }
+      }
+    },
+    "PermissionForEventsToInvokeLambda2": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {"Ref":"MyLambda2"},
+        "Action": "lambda:InvokeFunction",
+        "Principal": "events.amazonaws.com",
+        "SourceArn": { "Fn::GetAtt": ["ScheduledRule", "Arn"] }
+      }
     }
-}
   },
   "Outputs": {
     "VPC": {
