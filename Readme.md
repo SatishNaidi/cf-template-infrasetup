@@ -6,6 +6,5 @@
 4. Run the Cloud Formation Template [Main-CF-Template.json](https://github.com/SatishNaidi/cf-template-infrasetup/blob/master/Main-CF-Template.json)
   * For Cloud Formation Template Input Parameters under "Lambda Configuration" section
       * BucketForLambdaCode use `newly created S3 Bucket Name`
-      * Lambda1FileName use `lambda-cleanup-snapshot.zip`
-      * Lambda1FileName use `lambda-create-snapshot.zip`
-
+      * CleanupSnapShotCode use `lambda-cleanup-snapshot.zip`
+      * CreateSnapShotCode use `lambda-create-snapshot.zip`
