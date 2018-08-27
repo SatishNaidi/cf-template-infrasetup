@@ -363,12 +363,7 @@
           "Ref": "MyVPC"
         },
         "AvailabilityZone": {
-          "Fn::Select": [
-            "1",
-            {
-              "Ref": "AZs"
-            }
-          ]
+          "Fn::Select": ["1",{"Ref": "AZs"}]
         },
         "CidrBlock": {
           "Ref": "PrivateSubnet2CIDR"
@@ -377,9 +372,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": {
-              "Fn::Sub": "${aProjectName} Private Subnet (AZ2)"
-            }
+            "Value": {"Fn::Sub": "${aProjectName} Private Subnet (AZ2)"}
           }
         ]
       }
