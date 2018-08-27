@@ -9,11 +9,14 @@
         },
         {
           "Label" : { "default" : "VPC Configuration" },
-          "Parameters" : [ "VpcCIDR", "AZs", "PublicSubnet1CIDR","PublicSubnet2CIDR","PrivateSubnet1CIDR","PrivateSubnet2CIDR" ]
+          "Parameters" : [ 
+            "VpcCIDR", "AZs", "PublicSubnet1CIDR","PublicSubnet2CIDR",
+            "PrivateSubnet1CIDR","PrivateSubnet2CIDR" ,"RetentionInDays", "VPCTrafficType"
+          ]
         },
         {
           "Label" : { "default":"Buckets Configuation" },
-          "Parameters" : [ "BucketName", "MoveToGlacierAfrDays", "DeleteFromGlacierAfrDays"]
+          "Parameters" : [ "MoveToGlacierAfrDays", "DeleteFromGlacierAfrDays"]
         },
         {
           "Label" : { "default":"IAM Configuration" },
@@ -70,15 +73,45 @@
       "Type": "String",
       "Default": "10.192.21.0/24"
     },
+    "RetentionInDays": {
+      "Description": "Specifies the number of days you want to retain Flow log events?",
+      "Type": "Number",
+      "Default": 14,
+      "AllowedValues": [
+          1,
+          3,
+          5,
+          7,
+          14,
+          30,
+          60,
+          90,
+          120,
+          150,
+          180,
+          365,
+          400,
+          545,
+          731,
+          1827,
+          3653
+      ]
+  },
+  "VPCTrafficType": {
+      "Description": "The type of VPC traffic to log.",
+      "Type": "String",
+      "Default": "REJECT",
+      "AllowedValues": [
+          "ACCEPT",
+          "REJECT",
+          "ALL"
+      ]
+  },
     "SSHKeyName": {
+      "Default": "Mumbai",
       "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
       "Type": "AWS::EC2::KeyPair::KeyName",
       "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
-    },
-    "BucketName": {
-      "Default": "mydata",
-      "Description": "Enter a Name for the first bucket S3 bucket",
-      "Type": "String"
     },
     "MoveToGlacierAfrDays": {
       "Default": "30",
@@ -121,8 +154,9 @@
     }
   },
   "Resources": {
-    "S3Bucket": {
+    "cloudtrail": {
       "Type": "AWS::S3::Bucket",
+      "Metadata" : { "Object1" : "Location1",  "Object2" : "Location2" },
       "Properties": {
         "BucketEncryption": {
           "ServerSideEncryptionConfiguration": [
@@ -162,7 +196,7 @@
       "Type": "AWS::S3::BucketPolicy",
       "Properties": {
         "Bucket": {
-          "Ref": "S3Bucket"
+          "Ref": "cloudtrail"
         },
         "PolicyDocument": {
           "Version": "2012-10-17",
@@ -180,7 +214,7 @@
                   [
                     "arn:aws:s3:::",
                     {
-                      "Ref": "S3Bucket"
+                      "Ref": "cloudtrail"
                     }
                   ]
                 ]
@@ -199,7 +233,7 @@
                   [
                     "arn:aws:s3:::",
                     {
-                      "Ref": "S3Bucket"
+                      "Ref": "cloudtrail"
                     },
                     "/AWSLogs/",
                     {
@@ -264,7 +298,7 @@
       "Type": "AWS::CloudTrail::Trail",
       "Properties": {
         "S3BucketName": {
-          "Ref": "S3Bucket"
+          "Ref": "cloudtrail"
         },
         "SnsTopicName": {
           "Fn::GetAtt": [
@@ -275,7 +309,7 @@
         "IsLogging": true
       }
     },
-    "VPC": {
+    "MyVPC": {
       "Type": "AWS::EC2::VPC",
       "Properties": {
         "CidrBlock": {
@@ -313,7 +347,7 @@
           "Ref": "InternetGateway"
         },
         "VpcId": {
-          "Ref": "VPC"
+          "Ref": "MyVPC"
         }
       }
     },
@@ -321,7 +355,7 @@
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "VpcId": {
-          "Ref": "VPC"
+          "Ref": "MyVPC"
         },
         "AvailabilityZone": {
           "Fn::Select": [
@@ -349,7 +383,7 @@
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "VpcId": {
-          "Ref": "VPC"
+          "Ref": "MyVPC"
         },
         "AvailabilityZone": {
           "Fn::Select": [
@@ -377,7 +411,7 @@
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "VpcId": {
-          "Ref": "VPC"
+          "Ref": "MyVPC"
         },
         "AvailabilityZone": {
           "Fn::Select": [
@@ -405,7 +439,7 @@
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "VpcId": {
-          "Ref": "VPC"
+          "Ref": "MyVPC"
         },
         "AvailabilityZone": {
           "Fn::Select": [
@@ -433,14 +467,14 @@
       "Type": "AWS::EC2::EIP",
       "DependsOn": "InternetGatewayAttachment",
       "Properties": {
-        "Domain": "vpc"
+        "Domain": "MyVPC"
       }
     },
     "NatGateway2EIP": {
       "Type": "AWS::EC2::EIP",
       "DependsOn": "InternetGatewayAttachment",
       "Properties": {
-        "Domain": "vpc"
+        "Domain": "MyVPC"
       }
     },
     "NatGateway1": {
@@ -475,7 +509,7 @@
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
         "VpcId": {
-          "Ref": "VPC"
+          "Ref": "MyVPC"
         },
         "Tags": [
           {
@@ -526,7 +560,7 @@
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
         "VpcId": {
-          "Ref": "VPC"
+          "Ref": "MyVPC"
         },
         "Tags": [
           {
@@ -565,7 +599,7 @@
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
         "VpcId": {
-          "Ref": "VPC"
+          "Ref": "MyVPC"
         },
         "Tags": [
           {
@@ -605,7 +639,7 @@
       "Properties": {
         "GroupDescription": "Allow HTTP and SSH traffic Host attached",
         "VpcId": {
-          "Ref": "VPC"
+          "Ref": "MyVPC"
         },
         "SecurityGroupIngress": [
           {
@@ -631,23 +665,67 @@
         ]
       }
     },
+    "FlowLogRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+          "AssumeRolePolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                  {
+                      "Effect": "Allow",
+                      "Principal": {
+                          "Service": [
+                              "vpc-flow-logs.amazonaws.com"
+                          ]
+                      },
+                      "Action": "sts:AssumeRole"
+                  }
+              ]
+          },
+          "Policies": [
+              {
+                  "PolicyName": "flowlogs-policy",
+                  "PolicyDocument": {
+                      "Version": "2012-10-17",
+                      "Statement": [
+                          {
+                              "Effect": "Allow",
+                              "Action": [
+                                  "logs:CreateLogGroup",
+                                  "logs:CreateLogStream",
+                                  "logs:PutLogEvents",
+                                  "logs:DescribeLogGroups",
+                                  "logs:DescribeLogStreams"
+                              ],
+                              "Resource": "*"
+                          }
+                      ]
+                  }
+              }
+          ]
+      }
+  },
+  "FlowLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+          "RetentionInDays": {
+              "Ref": "RetentionInDays"
+          }
+      }
+  },
+  "MyFlowLog" : {
+      "Type" : "AWS::EC2::FlowLog",
+      "Properties" : {
+        "DeliverLogsPermissionArn" : { "Fn::GetAtt" : ["FlowLogRole", "Arn"] },
+        "LogGroupName" : "FlowLogGroup",
+        "ResourceId" : { "Ref" : "MyVPC" },
+        "ResourceType" : "VPC",
+        "TrafficType" : {"Ref": "VPCTrafficType"}
+      }
+    },
     "DataBucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": {
-          "Fn::Join": [
-            "-",
-            [
-              {
-                "Ref": "BucketName"
-              },
-              "data",
-              {
-                "Ref": "AWS::StackName"
-              }
-            ]
-          ]
-        },
         "BucketEncryption": {
           "ServerSideEncryptionConfiguration": [
             {
@@ -704,20 +782,6 @@
     "LoggingBucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
-        "BucketName": {
-          "Fn::Join": [
-            "-",
-            [
-              {
-                "Ref": "BucketName"
-              },
-              "access-log",
-              {
-                "Ref": "AWS::StackName"
-              }
-            ]
-          ]
-        },
         "BucketEncryption": {
           "ServerSideEncryptionConfiguration": [
             {
@@ -768,7 +832,7 @@
             "Resource": [ 
               { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "DataBucket"},"/*"]]},
               { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "LoggingBucket"},"/*"]]},
-              { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "S3Bucket"},"/*"]]}
+              { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "cloudtrail"},"/*"]]}
             
           ]
           }]
@@ -779,7 +843,7 @@
           {"Ref": "PrivateRouteTable2"}
          ],
         "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".s3" ] ] },
-        "VpcId" : {"Ref": "VPC"}
+        "VpcId" : {"Ref": "MyVPC"}
       }
     },
 
@@ -957,7 +1021,7 @@
                     [
                       "arn:aws:s3:::",
                       {
-                        "Ref": "S3Bucket"
+                        "Ref": "cloudtrail"
                       }
                     ]
                   ]
@@ -1004,7 +1068,7 @@
                     [
                       "arn:aws:s3:::",
                       {
-                        "Ref": "S3Bucket"
+                        "Ref": "cloudtrail"
                       },
                       "/*"
                     ]
@@ -1075,7 +1139,7 @@
                 "s3:GetBucketLocation"
               ],
               "Resource": [
-                { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "S3Bucket"}]]}
+                { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "cloudtrail"}]]}
               ]
             },
             {
@@ -1088,7 +1152,7 @@
                 "s3:DeleteObject"
               ],
               "Resource": [
-                { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "S3Bucket"},"/*"]]}
+                { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "cloudtrail"},"/*"]]}
               ]
             }
           ]
@@ -1185,14 +1249,13 @@
         ]
       }
     },
-    "MyLambda1": {
+    "cleanupsnapshot": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
           "Code": {
               "S3Bucket":  { "Ref": "BucketForLambdaCode" },
               "S3Key": { "Ref": "CleanupSnapShotCode" }
           },
-          "FunctionName": "lambda-cleanup-snapshot",
           "MemorySize": 128,
           "Handler": "lambda-cleanup-snapshot.lambda_handler",
           "Role": {"Fn::GetAtt" : ["LambdaExecutionRole", "Arn"] },
@@ -1201,14 +1264,13 @@
           "Description": "lambda-cleanup-snapshot"
       }
   },
-  "MyLambda2": {  
+  "createsnapshot": {  
     "Type": "AWS::Lambda::Function",
     "Properties": {
         "Code": {
             "S3Bucket":  { "Ref": "BucketForLambdaCode" },
             "S3Key": { "Ref": "CreateSnapShotCode" }
         },
-        "FunctionName": "lambda-create-snapshot",
         "MemorySize": 128,
         "Handler": "lambda-create-snapshot.lambda_handler",
         "Role": {"Fn::GetAtt" : ["LambdaExecutionRole", "Arn"] },
@@ -1224,12 +1286,12 @@
         "ScheduleExpression": "rate(1 day)",
         "State": "ENABLED",
         "Targets": [{
-          "Arn": { "Fn::GetAtt": ["MyLambda1", "Arn"] },
-          "Id": {"Ref":"MyLambda1"}
+          "Arn": { "Fn::GetAtt": ["cleanupsnapshot", "Arn"] },
+          "Id": {"Ref":"cleanupsnapshot"}
         },
         {
-          "Arn": { "Fn::GetAtt": ["MyLambda2", "Arn"] },
-          "Id": {"Ref":"MyLambda2"}
+          "Arn": { "Fn::GetAtt": ["createsnapshot", "Arn"] },
+          "Id": {"Ref":"createsnapshot"}
         }
       ]
       }
@@ -1237,7 +1299,7 @@
     "PermissionForEventsToInvokeLambda1": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
-        "FunctionName": {"Ref":"MyLambda1"},
+        "FunctionName": {"Ref":"cleanupsnapshot"},
         "Action": "lambda:InvokeFunction",
         "Principal": "events.amazonaws.com",
         "SourceArn": { "Fn::GetAtt": ["ScheduledRule", "Arn"] }
@@ -1246,7 +1308,7 @@
     "PermissionForEventsToInvokeLambda2": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
-        "FunctionName": {"Ref":"MyLambda2"},
+        "FunctionName": {"Ref":"createsnapshot"},
         "Action": "lambda:InvokeFunction",
         "Principal": "events.amazonaws.com",
         "SourceArn": { "Fn::GetAtt": ["ScheduledRule", "Arn"] }
@@ -1254,10 +1316,10 @@
     }
   },
   "Outputs": {
-    "VPC": {
+    "MyVPC": {
       "Description": "A reference to the created VPC",
       "Value": {
-        "Ref": "VPC"
+        "Ref": "MyVPC"
       }
     },
     "PublicSubnets": {
@@ -1290,30 +1352,6 @@
             }
           ]
         ]
-      }
-    },
-    "PublicSubnet1": {
-      "Description": "A reference to the public subnet in the 1st Availability Zone",
-      "Value": {
-        "Ref": "PublicSubnet1"
-      }
-    },
-    "PublicSubnet2": {
-      "Description": "A reference to the public subnet in the 2nd Availability Zone",
-      "Value": {
-        "Ref": "PublicSubnet2"
-      }
-    },
-    "PrivateSubnet1": {
-      "Description": "A reference to the private subnet in the 1st Availability Zone",
-      "Value": {
-        "Ref": "PrivateSubnet1"
-      }
-    },
-    "PrivateSubnet2": {
-      "Description": "A reference to the private subnet in the 2nd Availability Zone",
-      "Value": {
-        "Ref": "PrivateSubnet2"
       }
     },
     "InstanceSecurityGroup": {
@@ -1379,17 +1417,17 @@
       },
       "Description": "AWSSecretKey of new user"
     },
-    "Lambda1": {
+    "CleanupSnapshot": {
       "Value": {
-        "Ref": "MyLambda1"
+        "Ref": "cleanupsnapshot"
       },
-      "Description": "Lambda1"
+      "Description": "cleanup-snapshot"
     },
-    "Lambda2": {
+    "CreateSnapshot": {
       "Value": {
-        "Ref": "MyLambda1"
+        "Ref": "cleanupsnapshot"
       },
-      "Description": "Lambda2"
+      "Description": "create-snapshot"
     }
   }
 }
