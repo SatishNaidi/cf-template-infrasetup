@@ -1238,6 +1238,20 @@
                   {
                       "Effect": "Allow",
                       "Action": [
+                        "ec2:Describe*",
+                        "ec2:CreateSnapshot",
+                        "ec2:DeleteSnapshot",
+                        "ec2:CreateTags",
+                        "tag:AddResourceTags",
+                        "tag:RemoveResourceTags",
+                        "tag:TagResources",
+                        "tag:UntagResources"
+                      ],
+                      "Resource": "*"
+                  },
+                  {
+                      "Effect": "Allow",
+                      "Action": [
                           "logs:CreateLogStream",
                           "logs:PutLogEvents"
                       ],
