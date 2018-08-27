@@ -77,27 +77,9 @@
       "Description": "Specifies the number of days you want to retain Flow log events?",
       "Type": "Number",
       "Default": 14,
-      "AllowedValues": [
-          1,
-          3,
-          5,
-          7,
-          14,
-          30,
-          60,
-          90,
-          120,
-          150,
-          180,
-          365,
-          400,
-          545,
-          731,
-          1827,
-          3653
-      ]
-  },
-  "VPCTrafficType": {
+      "AllowedValues": [1,3,5,7,14,30,60,90,120,150,180,365,400,545,731,1827,3653]
+    },
+    "VPCTrafficType": {
       "Description": "The type of VPC traffic to log.",
       "Type": "String",
       "Default": "REJECT",
@@ -105,8 +87,8 @@
           "ACCEPT",
           "REJECT",
           "ALL"
-      ]
-  },
+        ]
+      },
     "SSHKeyName": {
       "Default": "Mumbai",
       "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
@@ -208,17 +190,7 @@
                 "Service": "cloudtrail.amazonaws.com"
               },
               "Action": "s3:GetBucketAcl",
-              "Resource": {
-                "Fn::Join": [
-                  "",
-                  [
-                    "arn:aws:s3:::",
-                    {
-                      "Ref": "cloudtrail"
-                    }
-                  ]
-                ]
-              }
+              "Resource": { "Fn::Join": ["",["arn:aws:s3:::",{"Ref": "cloudtrail"}]]}
             },
             {
               "Sid": "AWSCloudTrailWrite",
@@ -227,26 +199,9 @@
                 "Service": "cloudtrail.amazonaws.com"
               },
               "Action": "s3:PutObject",
-              "Resource": {
-                "Fn::Join": [
-                  "",
-                  [
-                    "arn:aws:s3:::",
-                    {
-                      "Ref": "cloudtrail"
-                    },
-                    "/AWSLogs/",
-                    {
-                      "Ref": "AWS::AccountId"
-                    },
-                    "/*"
-                  ]
-                ]
-              },
+              "Resource": {"Fn::Join": ["",["arn:aws:s3:::",{"Ref": "cloudtrail"},"/AWSLogs/",{"Ref": "AWS::AccountId"},"/*"]]},
               "Condition": {
-                "StringEquals": {
-                  "s3:x-amz-acl": "bucket-owner-full-control"
-                }
+                "StringEquals": {"s3:x-amz-acl": "bucket-owner-full-control"}
               }
             }
           ]
@@ -301,10 +256,7 @@
           "Ref": "cloudtrail"
         },
         "SnsTopicName": {
-          "Fn::GetAtt": [
-            "Topic",
-            "TopicName"
-          ]
+          "Fn::GetAtt": ["Topic","TopicName"]
         },
         "IsLogging": true
       }
@@ -320,9 +272,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": {
-              "Ref": "aProjectName"
-            }
+            "Value": { "Ref": "aProjectName"}
           }
         ]
       }
@@ -333,9 +283,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": {
-              "Ref": "aProjectName"
-            }
+            "Value": { "Ref": "aProjectName"}
           }
         ]
       }
@@ -346,35 +294,20 @@
         "InternetGatewayId": {
           "Ref": "InternetGateway"
         },
-        "VpcId": {
-          "Ref": "MyVPC"
-        }
+        "VpcId": {"Ref": "MyVPC"}
       }
     },
     "PublicSubnet1": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
-        "VpcId": {
-          "Ref": "MyVPC"
-        },
-        "AvailabilityZone": {
-          "Fn::Select": [
-            "0",
-            {
-              "Ref": "AZs"
-            }
-          ]
-        },
-        "CidrBlock": {
-          "Ref": "PublicSubnet1CIDR"
-        },
+        "VpcId": {"Ref": "MyVPC"},
+        "AvailabilityZone": {"Fn::Select": [ "0",{"Ref": "AZs"}]},
+        "CidrBlock": {"Ref": "PublicSubnet1CIDR"},
         "MapPublicIpOnLaunch": true,
         "Tags": [
           {
             "Key": "Name",
-            "Value": {
-              "Fn::Sub": "${aProjectName} Public Subnet (AZ1)"
-            }
+            "Value": {"Fn::Sub": "${aProjectName} Public Subnet (AZ1)"}
           }
         ]
       }
@@ -385,24 +318,13 @@
         "VpcId": {
           "Ref": "MyVPC"
         },
-        "AvailabilityZone": {
-          "Fn::Select": [
-            "1",
-            {
-              "Ref": "AZs"
-            }
-          ]
-        },
-        "CidrBlock": {
-          "Ref": "PublicSubnet2CIDR"
-        },
+        "AvailabilityZone": {"Fn::Select": ["1",{"Ref": "AZs"}]},
+        "CidrBlock": {"Ref": "PublicSubnet2CIDR"},
         "MapPublicIpOnLaunch": true,
         "Tags": [
           {
             "Key": "Name",
-            "Value": {
-              "Fn::Sub": "${aProjectName} Public Subnet (AZ2)"
-            }
+            "Value": {"Fn::Sub": "${aProjectName} Public Subnet (AZ2)"}
           }
         ]
       }
@@ -414,8 +336,7 @@
           "Ref": "MyVPC"
         },
         "AvailabilityZone": {
-          "Fn::Select": [
-            "0",
+          "Fn::Select": ["0",
             {
               "Ref": "AZs"
             }
@@ -668,61 +589,59 @@
     "FlowLogRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-          "AssumeRolePolicyDocument": {
-              "Version": "2012-10-17",
-              "Statement": [
-                  {
-                      "Effect": "Allow",
-                      "Principal": {
-                          "Service": [
-                              "vpc-flow-logs.amazonaws.com"
-                          ]
-                      },
-                      "Action": "sts:AssumeRole"
-                  }
-              ]
-          },
-          "Policies": [
-              {
-                  "PolicyName": "flowlogs-policy",
-                  "PolicyDocument": {
-                      "Version": "2012-10-17",
-                      "Statement": [
-                          {
-                              "Effect": "Allow",
-                              "Action": [
-                                  "logs:CreateLogGroup",
-                                  "logs:CreateLogStream",
-                                  "logs:PutLogEvents",
-                                  "logs:DescribeLogGroups",
-                                  "logs:DescribeLogStreams"
-                              ],
-                              "Resource": "*"
-                          }
-                      ]
-                  }
-              }
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "vpc-flow-logs.amazonaws.com"
+                ]
+              },
+              "Action": "sts:AssumeRole"
+            }
           ]
-      }
-  },
-  "FlowLogGroup": {
-      "Type": "AWS::Logs::LogGroup",
-      "Properties": {
-          "RetentionInDays": {
-              "Ref": "RetentionInDays"
-          }
-      }
-  },
-  "MyFlowLog" : {
-      "Type" : "AWS::EC2::FlowLog",
-      "Properties" : {
-        "DeliverLogsPermissionArn" : { "Fn::GetAtt" : ["FlowLogRole", "Arn"] },
-        "LogGroupName" : "FlowLogGroup",
-        "ResourceId" : { "Ref" : "MyVPC" },
-        "ResourceType" : "VPC",
-        "TrafficType" : {"Ref": "VPCTrafficType"}
-      }
+        },
+        "Policies": [
+            {
+              "PolicyName": "flowlogs-policy",
+              "PolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Action": [
+                      "logs:CreateLogGroup",
+                      "logs:CreateLogStream",
+                      "logs:PutLogEvents",
+                      "logs:DescribeLogGroups",
+                      "logs:DescribeLogStreams"
+                    ],
+                    "Resource": "*"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+    "FlowLogGroup": {
+        "Type": "AWS::Logs::LogGroup",
+        "Properties": {
+            "RetentionInDays": {"Ref": "RetentionInDays"}
+        }
     },
+    "MyFlowLog" : {
+        "Type" : "AWS::EC2::FlowLog",
+        "Properties" : {
+          "DeliverLogsPermissionArn" : { "Fn::GetAtt" : ["FlowLogRole", "Arn"] },
+          "LogGroupName" : "FlowLogGroup",
+          "ResourceId" : { "Ref" : "MyVPC" },
+          "ResourceType" : "VPC",
+          "TrafficType" : {"Ref": "VPCTrafficType"}
+        }
+      },
     "DataBucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
@@ -746,14 +665,10 @@
                   "TransitionInDays": 1
                 }
               ],
-              "ExpirationInDays": {
-                "Ref": "DeleteFromGlacierAfrDays"
-              },
+              "ExpirationInDays": {"Ref": "DeleteFromGlacierAfrDays"},
               "Transitions": [
                 {
-                  "TransitionInDays": {
-                    "Ref": "MoveToGlacierAfrDays"
-                  },
+                  "TransitionInDays": {"Ref": "MoveToGlacierAfrDays"},
                   "StorageClass": "Glacier"
                 }
               ]
@@ -763,18 +678,14 @@
         "Tags": [
           {
             "Key": "Project",
-            "Value": {
-              "Fn::Sub": "${aProjectName}"
-            }
+            "Value": {"Fn::Sub": "${aProjectName}"}
           }
         ],
         "VersioningConfiguration": {
           "Status": "Enabled"
         },
         "LoggingConfiguration": {
-          "DestinationBucketName": {
-            "Ref": "LoggingBucket"
-          },
+          "DestinationBucketName": {"Ref": "LoggingBucket"},
           "LogFilePrefix": "access-logs"
         }
       }
@@ -802,14 +713,10 @@
                   "TransitionInDays": 1
                 }
               ],
-              "ExpirationInDays": {
-                "Ref": "DeleteFromGlacierAfrDays"
-              },
+              "ExpirationInDays": {"Ref": "DeleteFromGlacierAfrDays"},
               "Transitions": [
                 {
-                  "TransitionInDays": {
-                    "Ref": "MoveToGlacierAfrDays"
-                  },
+                  "TransitionInDays": {"Ref": "MoveToGlacierAfrDays"},
                   "StorageClass": "Glacier"
                 }
               ]
@@ -825,7 +732,8 @@
       "Properties" : {
         "PolicyDocument" : {
           "Version":"2012-10-17",
-          "Statement":[{
+          "Statement":[
+            {
             "Effect":"Allow",
             "Principal": "*",
             "Action":["s3:GetObject"],
@@ -833,9 +741,9 @@
               { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "DataBucket"},"/*"]]},
               { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "LoggingBucket"},"/*"]]},
               { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "cloudtrail"},"/*"]]}
-            
+            ]
+            }
           ]
-          }]
         },
         "RouteTableIds" : [ 
           {"Ref": "PublicRouteTable"},
@@ -851,10 +759,7 @@
       "Type": "AWS::IAM::User",
       "Properties": {
         "LoginProfile": {
-          "Password": {
-            "Ref": "Password"
-          }
-        }
+          "Password": {"Ref": "Password"}}
       }
     },
     "DoDUserGroup": {
@@ -867,9 +772,7 @@
           "Ref": "DoDUserGroup"
         },
         "Users": [
-          {
-            "Ref": "DoDUser"
-          }
+          {"Ref": "DoDUser"}
         ]
       }
     },
@@ -893,17 +796,7 @@
                 "s3:GetBucketLocation"
               ],
               "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "DataBucket"
-                      }
-                    ]
-                  ]
-                }
+                {"Fn::Join": ["",["arn:aws:s3:::",{"Ref": "DataBucket"}]]}
               ]
             },
             {
@@ -916,44 +809,27 @@
                 "s3:DeleteObject"
               ],
               "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "DataBucket"
-                      },
-                      "/*"
-                    ]
-                  ]
-                }
+                {"Fn::Join": ["",["arn:aws:s3:::",{"Ref": "DataBucket"},"/*"]]}
               ]
             }
           ]
         },
         "Groups": [
-          {
-            "Ref": "DoDUserGroup"
-          }
+          {"Ref": "DoDUserGroup"}
         ]
       }
     },
     "DoDKeys": {
       "Type": "AWS::IAM::AccessKey",
       "Properties": {
-        "UserName": {
-          "Ref": "DoDUser"
-        }
+        "UserName": {"Ref": "DoDUser"}
       }
     },
     "Admin1User": {
       "Type": "AWS::IAM::User",
       "Properties": {
         "LoginProfile": {
-          "Password": {
-            "Ref": "Password"
-          }
+          "Password": {"Ref": "Password"}
         }
       }
     },
@@ -963,13 +839,9 @@
     "Users2": {
       "Type": "AWS::IAM::UserToGroupAddition",
       "Properties": {
-        "GroupName": {
-          "Ref": "Admin1UserGroup"
-        },
+        "GroupName": {"Ref": "Admin1UserGroup"},
         "Users": [
-          {
-            "Ref": "Admin1User"
-          }
+          {"Ref": "Admin1User"}
         ]
       }
     },
@@ -992,40 +864,10 @@
                 "s3:ListBucket",
                 "s3:GetBucketLocation"
               ],
-              "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "DataBucket"
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "LoggingBucket"
-                      }
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "cloudtrail"
-                      }
-                    ]
-                  ]
-                }
+              "Resource": [ 
+                { "Fn::Join": ["",["arn:aws:s3:::",{"Ref": "DataBucket"}]]},
+                {"Fn::Join": ["",["arn:aws:s3:::",{"Ref": "LoggingBucket"}]]},
+                {"Fn::Join": ["",["arn:aws:s3:::",{"Ref": "cloudtrail"}]]}
               ]
             },
             {
@@ -1038,68 +880,29 @@
                 "s3:DeleteObject"
               ],
               "Resource": [
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "DataBucket"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "LoggingBucket"
-                      },
-                      "/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:aws:s3:::",
-                      {
-                        "Ref": "cloudtrail"
-                      },
-                      "/*"
-                    ]
-                  ]
-                }
+                {"Fn::Join": ["",["arn:aws:s3:::",{"Ref": "DataBucket"},"/*"]]},
+                {"Fn::Join": ["",["arn:aws:s3:::",{"Ref": "LoggingBucket"},"/*"]]},
+                {"Fn::Join": ["",["arn:aws:s3:::",{"Ref": "cloudtrail"},"/*"]]}
               ]
             }
           ]
         },
         "Groups": [
-          {
-            "Ref": "Admin1UserGroup"
-          }
+          {"Ref": "Admin1UserGroup"}
         ]
       }
     },
     "Admin1Keys": {
       "Type": "AWS::IAM::AccessKey",
       "Properties": {
-        "UserName": {
-          "Ref": "Admin1User"
-        }
+        "UserName": {"Ref": "Admin1User"}
       }
     },
     "SecurityUser": {
       "Type": "AWS::IAM::User",
       "Properties": {
         "LoginProfile": {
-          "Password": {
-            "Ref": "Password"
-          }
+          "Password": {"Ref": "Password"}
         }
       }
     },
@@ -1109,13 +912,9 @@
     "Users3": {
       "Type": "AWS::IAM::UserToGroupAddition",
       "Properties": {
-        "GroupName": {
-          "Ref": "SecurityUserGroup"
-        },
+        "GroupName": { "Ref": "SecurityUserGroup" },
         "Users": [
-          {
-            "Ref": "SecurityUser"
-          }
+          {"Ref": "SecurityUser"}
         ]
       }
     },
@@ -1157,11 +956,7 @@
             }
           ]
         },
-        "Groups": [
-          {
-            "Ref": "SecurityUserGroup"
-          }
-        ]
+        "Groups": [{"Ref": "SecurityUserGroup"}]
       }
     },
     "SecurityKeys": {
@@ -1258,7 +1053,7 @@
                       "Resource":"*"
                   }
               ]
-          }
+            }
           }
         ]
       }
@@ -1332,115 +1127,57 @@
   "Outputs": {
     "MyVPC": {
       "Description": "A reference to the created VPC",
-      "Value": {
-        "Ref": "MyVPC"
-      }
+      "Value": {"Ref": "MyVPC"}
     },
     "PublicSubnets": {
       "Description": "A list of the public subnets",
-      "Value": {
-        "Fn::Join": [
-          ", ",
-          [
-            {
-              "Ref": "PublicSubnet1"
-            },
-            {
-              "Ref": "PublicSubnet2"
-            }
-          ]
-        ]
-      }
-    },
+      "Value": {"Fn::Join": [", ",[{"Ref": "PublicSubnet1"},{"Ref": "PublicSubnet2"}]]}},
     "PrivateSubnets": {
       "Description": "A list of the private subnets",
-      "Value": {
-        "Fn::Join": [
-          ", ",
-          [
-            {
-              "Ref": "PrivateSubnet1"
-            },
-            {
-              "Ref": "PrivateSubnet2"
-            }
-          ]
-        ]
-      }
+      "Value": {"Fn::Join": [", ",[{"Ref": "PrivateSubnet1"},{"Ref": "PrivateSubnet2"}]]}
     },
     "InstanceSecurityGroup": {
       "Description": "Allow HTTP and SSH traffic Host attached",
-      "Value": {
-        "Ref": "InstanceSecurityGroup"
-      }
+      "Value": {"Ref": "InstanceSecurityGroup"}
     },
     "DataBucketName": {
-      "Value": {
-        "Ref": "DataBucket"
-      },
+      "Value": {"Ref": "DataBucket"},
       "Description": "Name of the sample Amazon S3 bucket with a logging configuration.\n Enable with Default AES256"
     },
     "LoggingBucketName": {
-      "Value": {
-        "Ref": "LoggingBucket"
-      },
+      "Value": {"Ref": "LoggingBucket"},
       "Description": "Name of the sample Amazon S3 bucket with a logging configuration.\n Enable with Default AES256"
     },
     "DoDAccessKey": {
-      "Value": {
-        "Ref": "DoDKeys"
-      },
+      "Value": {"Ref": "DoDKeys"},
       "Description": "AWSAccessKeyId of new user"
     },
     "DoDSecretKey": {
-      "Value": {
-        "Fn::GetAtt": [
-          "DoDKeys",
-          "SecretAccessKey"
-        ]
-      },
+      "Value": {"Fn::GetAtt": ["DoDKeys","SecretAccessKey"]},
       "Description": "AWSSecretKey of new user"
     },
     "Admin1AccessKey": {
-      "Value": {
-        "Ref": "Admin1Keys"
-      },
+      "Value": {"Ref": "Admin1Keys"},
       "Description": "AWSAccessKeyId of new user"
     },
     "Admin1SecretKey": {
-      "Value": {
-        "Fn::GetAtt": [
-          "Admin1Keys",
-          "SecretAccessKey"
-        ]
-      },
+      "Value": {"Fn::GetAtt": ["Admin1Keys","SecretAccessKey"]},
       "Description": "AWSSecretKey of new user"
     },
     "SecurityAccessKey": {
-      "Value": {
-        "Ref": "SecurityKeys"
-      },
+      "Value": {"Ref": "SecurityKeys"},
       "Description": "AWSAccessKeyId of new user"
     },
     "SecuritySecretKey": {
-      "Value": {
-        "Fn::GetAtt": [
-          "SecurityKeys",
-          "SecretAccessKey"
-        ]
-      },
+      "Value": {"Fn::GetAtt": ["SecurityKeys","SecretAccessKey"]},
       "Description": "AWSSecretKey of new user"
     },
     "CleanupSnapshot": {
-      "Value": {
-        "Ref": "cleanupsnapshot"
-      },
+      "Value": {"Ref": "cleanupsnapshot"},
       "Description": "cleanup-snapshot"
     },
     "CreateSnapshot": {
-      "Value": {
-        "Ref": "cleanupsnapshot"
-      },
+      "Value": { "Ref": "cleanupsnapshot"},
       "Description": "create-snapshot"
     }
   }
