@@ -107,7 +107,7 @@
     },
     "OperatorEmail": {
       "Description": "Email address to notify when new logs are published.",
-      "Default":"SatishNaidi@gmail.com",
+      "Default":"youremail@domain.com",
       "Type": "String"
     },
     "BucketForLambdaCode": {
@@ -973,6 +973,16 @@
           {
             "Ref": "InstanceSecurityGroup"
           }
+        ],
+        "Tags": [
+          {
+            "Key": "Backup",
+            "Value": "Yes"
+          },
+          {
+            "Key": "Name",
+            "Value": "SplunkInstance1"
+          }
         ]
       }
     },
@@ -990,6 +1000,16 @@
         "SecurityGroupIds": [
           {
             "Ref": "InstanceSecurityGroup"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Backup",
+            "Value": "Yes"
+          },
+          {
+            "Key": "Name",
+            "Value": "SplunkInstance2"
           }
         ]
       }
