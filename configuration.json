@@ -17,6 +17,11 @@
     "BucketForLambdaCode": "aws-saketh-lambda",
     "CleanupSnapShotCode": "lambda-cleanup-snapshot.zip",
     "CreateSnapShotCode": "lambda-create-snapshot.zip",
-    "Password": "HelloWorld123@9Id"
+    "Password": "HelloWorld123@9Id",
+    "DBName":"pgdb",
+    "DBUsername":"root",
+    "DBPassword":"root1234",
+    "DBClass":"db.t2.micro",
+    "DBAllocatedStorage":"5"
   }
 }
