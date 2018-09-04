@@ -1,0 +1,22 @@
+{
+  "Parameters": 
+    {
+    "aProjectName": "STaaS",
+    "VpcCIDR": "10.192.0.0/16",
+    "AZs":"us-east-1a,us-east-1b",
+    "PublicSubnet1CIDR":"10.192.10.0/24",
+    "PublicSubnet2CIDR": "10.192.11.0/24",
+    "PrivateSubnet1CIDR": "10.192.20.0/24",
+    "PrivateSubnet2CIDR": "10.192.21.0/24",
+    "RetentionInDays": "14",
+    "VPCTrafficType": "ACCEPT",
+    "SSHKeyName": "Mumbai",
+    "MoveToGlacierAfrDays": "30",
+    "DeleteFromGlacierAfrDays": "90",
+    "OperatorEmail": "youremail@domain.com",
+    "BucketForLambdaCode": "aws-saketh-lambda",
+    "CleanupSnapShotCode": "lambda-cleanup-snapshot.zip",
+    "CreateSnapShotCode": "lambda-create-snapshot.zip",
+    "Password": "HelloWorld123@9Id"
+  }
+}
