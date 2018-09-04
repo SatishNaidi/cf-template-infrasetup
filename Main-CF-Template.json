@@ -1276,6 +1276,15 @@
     "CreateSnapshot": {
       "Value": { "Ref": "cleanupsnapshot"},
       "Description": "create-snapshot"
+    },
+    "JDBCConnectionString": {
+      "Description" : "JDBC connection string for database",
+      "Value" : { "Fn::Join": [ "", [ "jdbc:postgresql://",
+                                      { "Fn::GetAtt": [ "pgDB", "Endpoint.Address" ] },
+                                      ":",
+                                      { "Fn::GetAtt": [ "pgDB", "Endpoint.Port" ] },
+                                      "/",
+                                      { "Ref": "DBName" }]]}
     }
   }
 }
