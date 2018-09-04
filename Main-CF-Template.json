@@ -33,6 +33,10 @@
         {
           "Label" : { "default":"Lambda Configuration" },
           "Parameters" : [ "BucketForLambdaCode","CleanupSnapShotCode","CreateSnapShotCode" ]
+        },
+        {
+          "Label" : { "default":"PostGreSQL Configuration" },
+          "Parameters" : [ "DBName", "DBUsername","DBPassword","DBClass","DBAllocatedStorage"]
         }
       ]
     }
@@ -133,6 +137,51 @@
       "MinLength": "1",
       "MaxLength": "41",
       "ConstraintDescription": "Please refer to IAM Password Policy in your account"
+    },
+    "DBName": {
+      "Default": "pgdb",
+      "Description" : "The database name",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "8",
+      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+    },
+
+    "DBUsername": {
+      "Default": "root",
+      "NoEcho": "true",
+      "Description" : "The database admin account username",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "16",
+      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+    },
+
+    "DBPassword": {
+      "Default": "root1234",
+      "NoEcho": "true",
+      "Description" : "The database admin account password",
+      "Type": "String",
+      "MinLength": "8"
+    },
+
+    "DBClass" : {
+      "Default" : "db.t2.micro",
+      "Description" : "Database instance class",
+      "Type" : "String",
+      "AllowedValues" : [ "db.t2.micro", "db.m1.small", "db.m1.large", "db.m1.xlarge", "db.m2.xlarge" ],
+      "ConstraintDescription" : "must select a valid database instance type."
+    },
+
+    "DBAllocatedStorage" : {
+      "Default": "5",
+      "Description" : "The size of the database (Gb)",
+      "Type": "Number",
+      "MinValue": "5",
+      "MaxValue": "6144",
+      "ConstraintDescription" : "must be between 5+"
     }
   },
   "Resources": {
@@ -1132,6 +1181,43 @@
         "Action": "lambda:InvokeFunction",
         "Principal": "events.amazonaws.com",
         "SourceArn": { "Fn::GetAtt": ["ScheduledRule", "Arn"] }
+      }
+    },
+    "myDBEC2SecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Frontend Access",
+        "VpcId"            : {"Ref": "MyVPC"},
+        "SecurityGroupIngress" : [{
+          "IpProtocol" : "tcp",
+          "FromPort"   : 5432,
+          "ToPort"     : 5432,
+          "CidrIp"     : "10.0.0.0/16"
+        }]
+      }
+    },
+    "myDBSubnetGroup" : {
+      "Type" : "AWS::RDS::DBSubnetGroup",
+      "Properties" : {
+         "DBSubnetGroupDescription" : "DB Private Subnet",
+         "SubnetIds" : [
+           {"Ref": "PrivateSubnet1"},
+           {"Ref": "PrivateSubnet2"}
+          ]
+      }
+    },
+    "pgDB" : {
+      "Type" : "AWS::RDS::DBInstance",
+      "Properties" : {
+        "DBName" : { "Ref" : "DBName" },
+        "AllocatedStorage" : { "Ref" : "DBAllocatedStorage" },
+        "DBInstanceClass" : { "Ref" : "DBClass" },
+        "Engine" : "postgres",
+        "EngineVersion":"10.3",
+        "MasterUsername" : { "Ref" : "DBUsername" } ,
+        "MasterUserPassword" : { "Ref" : "DBPassword" },
+        "DBSubnetGroupName" : { "Ref" : "myDBSubnetGroup" },
+        "VPCSecurityGroups" : [ { "Fn::GetAtt" : [ "myDBEC2SecurityGroup", "GroupId" ] } ]
       }
     }
   },
