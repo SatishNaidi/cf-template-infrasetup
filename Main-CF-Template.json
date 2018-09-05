@@ -168,10 +168,10 @@
     },
 
     "DBClass" : {
-      "Default" : "db.t2.micro",
+      "Default" : "db.t2.small",
       "Description" : "Database instance class",
       "Type" : "String",
-      "AllowedValues" : [ "db.t2.micro", "db.m1.small", "db.m1.large", "db.m1.xlarge", "db.m2.xlarge" ],
+      "AllowedValues" : [ "db.t2.small", "db.m1.small", "db.m1.large", "db.m1.xlarge", "db.m2.xlarge" ],
       "ConstraintDescription" : "must select a valid database instance type."
     },
 
@@ -614,6 +614,12 @@
             "FromPort": "80",
             "ToPort": "80",
             "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol" : "tcp",
+            "FromPort"   : 5432,
+            "ToPort"     : 5432,
+            "CidrIp"     : {"Ref": "VpcCIDR"}
           }
         ],
         "SecurityGroupEgress": [
@@ -622,6 +628,12 @@
             "FromPort": "1",
             "ToPort": "65535",
             "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "InstanceSecurityGroup"
           }
         ]
       }
@@ -1183,17 +1195,26 @@
         "SourceArn": { "Fn::GetAtt": ["ScheduledRule", "Arn"] }
       }
     },
-    "myDBEC2SecurityGroup": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties" : {
-        "GroupDescription" : "Frontend Access",
-        "VpcId"            : {"Ref": "MyVPC"},
-        "SecurityGroupIngress" : [{
-          "IpProtocol" : "tcp",
-          "FromPort"   : 5432,
-          "ToPort"     : 5432,
-          "CidrIp"     : "10.0.0.0/16"
-        }]
+    "RdsMonitoringRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "monitoring.rds.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+        ],
+        "Path": "/"
       }
     },
     "myDBSubnetGroup" : {
@@ -1214,10 +1235,20 @@
         "DBInstanceClass" : { "Ref" : "DBClass" },
         "Engine" : "postgres",
         "EngineVersion":"10.3",
+        "StorageType" : "gp2",
+        "StorageEncrypted": true,
+        "BackupRetentionPeriod":"35",
+        "MonitoringInterval": 10,
+        "MonitoringRoleArn": {
+          "Fn::GetAtt": [
+            "RdsMonitoringRole",
+            "Arn"
+          ]
+        },
         "MasterUsername" : { "Ref" : "DBUsername" } ,
         "MasterUserPassword" : { "Ref" : "DBPassword" },
         "DBSubnetGroupName" : { "Ref" : "myDBSubnetGroup" },
-        "VPCSecurityGroups" : [ { "Fn::GetAtt" : [ "myDBEC2SecurityGroup", "GroupId" ] } ]
+        "VPCSecurityGroups" : [ { "Fn::GetAtt" : [ "InstanceSecurityGroup", "GroupId" ] } ]
       }
     }
   },
