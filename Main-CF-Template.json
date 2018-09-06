@@ -1075,6 +1075,32 @@
         ]
       }
     },
+    "Barracuda": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": "ami-06793f2e3a0d3decc",
+        "KeyName": {
+          "Ref": "SSHKeyName"
+        },
+        "SubnetId": { "Ref": "PublicSubnet1" },
+        "InstanceType": "t2.medium",
+        "SecurityGroupIds": [
+          {
+            "Ref": "InstanceSecurityGroup"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Backup",
+            "Value": "Yes"
+          },
+          {
+            "Key": "Name",
+            "Value": "Barracuda Instance"
+          }
+        ]
+      }
+    },
     "LambdaExecutionRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
