@@ -10,7 +10,7 @@
       * CreateSnapShotCode use `lambda-create-snapshot.zip`
 
 
-# New template for Barracude Instance Creation
+# New template for Barracuda Instance Creation
 The template Barracuda-InstanceCreation.json will be creating New security group and Creates new EC2 instance in selected subnet  
 
 # New template for Splunk Instances Creation
