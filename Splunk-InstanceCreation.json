@@ -1,0 +1,149 @@
+{
+  "Description": "To Create 2 Splunk Instances with Custom Security Group",
+  "Metadata" : {
+    "AWS::CloudFormation::Interface" : {
+      "ParameterGroups" : [
+        {
+          "Label" : { "default" : "VPC And Subnet Selection" },
+          "Parameters" : [ "VpcID","PrivateSubnet1CIDR","PrivateSubnet2CIDR"]
+        }
+      ]
+    }
+  },
+  "Parameters": {
+    "VpcID": {
+      "Description": "CIDR for the VPC",
+      "Type": "AWS::EC2::VPC::Id"
+    },
+    "PrivateSubnet1CIDR": {
+      "Description": "CIDR for Private Subnet in AZ1",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "PrivateSubnet2CIDR": {
+      "Description": "CIDR for Private Subnet in AZ2",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "SSHKeyName": {
+      "Default": "Mumbai",
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "ConstraintDescription": "Must be the name of an existing EC2 KeyPair."
+    }
+  },
+  "Resources": {
+   "SplunkSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+       "GroupName" : "Splunk-Security-Group2",
+       "GroupDescription" : "Allow Inbound traffic to Splunk",
+       "VpcId" : {"Ref": "VpcID"},
+       "SecurityGroupIngress" : [
+        {
+        "IpProtocol" : "tcp",
+        "FromPort" : 8000,
+        "ToPort" : 8000,
+        "CidrIp" : "0.0.0.0/0"
+        },
+        {
+        "IpProtocol" : "tcp",
+        "FromPort" : 9997,
+        "ToPort" : 9997,
+        "CidrIp" : "0.0.0.0/0"
+        },
+        {
+        "IpProtocol" : "tcp",
+        "FromPort" : 8089,
+        "ToPort" : 8089,
+        "CidrIp" : "0.0.0.0/0"
+        },
+        {
+        "IpProtocol" : "tcp",
+        "FromPort" : 8088,
+        "ToPort" : 8088,
+        "CidrIp" : "0.0.0.0/0"
+        },
+        {
+        "IpProtocol" : "tcp",
+        "FromPort" : 22,
+        "ToPort" : 22,
+        "CidrIp" : "0.0.0.0/0"
+        }],
+       "Tags" : [
+         {
+         "Key" : "Name",
+         "Value" : "Splunk-Security-Group"
+       }]
+       }
+   },
+    "MySplunkInstance1": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": "ami-cfe4b2b0",
+        "KeyName": {
+          "Ref": "SSHKeyName"
+        },
+        "SubnetId": {
+          "Ref": "PrivateSubnet1CIDR"
+        },
+        "InstanceType": "t2.micro",
+        "SecurityGroupIds": [
+          {
+            "Ref": "SplunkSecurityGroup"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Backup",
+            "Value": "Yes"
+          },
+          {
+            "Key": "Name",
+            "Value": "SplunkInstance1"
+          }
+        ]
+      }
+    },
+    "MySplunkInstance2": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": "ami-cfe4b2b0",
+        "KeyName": {
+          "Ref": "SSHKeyName"
+        },
+        "SubnetId": {
+          "Ref": "PrivateSubnet2CIDR"
+        },
+        "InstanceType": "t2.micro",
+        "SecurityGroupIds": [
+          {
+            "Ref": "SplunkSecurityGroup"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Backup",
+            "Value": "Yes"
+          },
+          {
+            "Key": "Name",
+            "Value": "SplunkInstance2"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "SplunkSecurityGroup": {
+      "Description": "Splunk Instnace Security Group",
+      "Value": {"Ref": "SplunkSecurityGroup"}
+    },
+    "MySplunkInstance1": {
+      "Value": {"Ref": "MySplunkInstance1"},
+      "Description": "MySplunkInstance1"
+    },
+    "MySplunkInstance2": {
+      "Value": {"Ref": "MySplunkInstance2"},
+      "Description": "MySplunkInstance2"
+    }
+  }
+}

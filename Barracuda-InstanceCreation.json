@@ -1,0 +1,117 @@
+{
+  "Description": "To Barracude Instance with Custom Security Group",
+  "Metadata" : {
+    "AWS::CloudFormation::Interface" : {
+      "ParameterGroups" : [
+        {
+          "Label" : { "default" : "VPC And Subnet Selection" },
+          "Parameters" : [ "VpcID","PublicSubnetCIDR"]
+        }
+      ]
+    }
+  },
+  "Parameters": {
+    "VpcID": {
+      "Description": "CIDR for the VPC",
+      "Type": "AWS::EC2::VPC::Id"
+    },
+    "PublicSubnetCIDR": {
+      "Description": "CIDR for Public Subnet",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "SSHKeyName": {
+      "Default": "Mumbai",
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+    }
+  },
+  "Resources": {
+    "FirewallSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+         "GroupName" : "Barracuda-Security-Group2",
+       "GroupDescription" : "Allow Inbound Traffic to Firewall",
+       "VpcId" : {"Ref": "VpcID"},
+       "SecurityGroupIngress" : [{
+       "IpProtocol" : "tcp",
+       "FromPort" : 807,
+       "ToPort" : 807,
+       "CidrIp" : "0.0.0.0/0"
+        },
+        {
+       "IpProtocol" : "tcp",
+       "FromPort" : 806,
+       "ToPort" : 806,
+       "CidrIp" : "0.0.0.0/0"
+        },
+        {
+       "IpProtocol" : "tcp",
+       "FromPort" : 22,
+       "ToPort" : 22,
+       "CidrIp" : "0.0.0.0/0"
+        },
+        {
+       "IpProtocol" : "tcp",
+       "FromPort" : 443,
+       "ToPort" : 443,
+       "CidrIp" : "0.0.0.0/0"
+        },
+        {
+       "IpProtocol" : "tcp",
+       "FromPort" : 691,
+       "ToPort" : 691,
+       "CidrIp" : "0.0.0.0/0"
+         },
+       {
+       "IpProtocol" : "udp",
+       "FromPort" : 691,
+       "ToPort" : 691,
+       "CidrIp" : "0.0.0.0/0"
+         }
+       ],
+       "Tags" : [
+         {
+         "Key" : "Name",
+         "Value" : "Barracuda-Security-Group"
+         }]
+      }
+   },
+    "Barracuda": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": "ami-cfe4b2b0",
+        "KeyName": {
+          "Ref": "SSHKeyName"
+        },
+        "SubnetId": { "Ref": "PublicSubnetCIDR" },
+        "InstanceType": "t2.medium",
+        "SecurityGroupIds": [
+          {
+            "Ref": "FirewallSecurityGroup"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Backup",
+            "Value": "Yes"
+          },
+          {
+            "Key": "Name",
+            "Value": "Barracuda Instance"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "FirewallSecurityGroup": {
+      "Description": "Barracude Instance Security Group",
+      "Value": {"Ref": "FirewallSecurityGroup"}
+    },
+    "BarracudaInstnaceId": {
+      "Value": {"Ref": "Barracuda"},
+      "Description": "instance ID"
+    }
+  }
+}

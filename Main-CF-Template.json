@@ -1197,7 +1197,7 @@
     "Barracuda": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "ImageId": "ami-06793f2e3a0d3decc",
+        "ImageId": "ami-cfe4b2b0",
         "KeyName": {
           "Ref": "SSHKeyName"
         },
