@@ -638,6 +638,127 @@
         ]
       }
     },
+    "FirewallSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+         "GroupName" : "Barracuda-Security-Group",
+       "GroupDescription" : "Allow Inbound Traffic to Firewall",
+       "VpcId" : {"Ref": "MyVPC"},
+       "SecurityGroupIngress" : [{
+       "IpProtocol" : "tcp",
+       "FromPort" : 807,
+       "ToPort" : 807,
+       "CidrIp" : "0.0.0.0/0"
+        },
+        {
+       "IpProtocol" : "tcp",
+       "FromPort" : 806,
+       "ToPort" : 806,
+       "CidrIp" : "0.0.0.0/0"
+        },
+        {
+       "IpProtocol" : "tcp",
+       "FromPort" : 22,
+       "ToPort" : 22,
+       "CidrIp" : "0.0.0.0/0"
+        },
+        {
+       "IpProtocol" : "tcp",
+       "FromPort" : 443,
+       "ToPort" : 443,
+       "CidrIp" : "0.0.0.0/0"
+        },
+        {
+       "IpProtocol" : "tcp",
+       "FromPort" : 691,
+       "ToPort" : 691,
+       "CidrIp" : "0.0.0.0/0"
+         },
+       {
+       "IpProtocol" : "udp",
+       "FromPort" : 691,
+       "ToPort" : 691,
+       "CidrIp" : "0.0.0.0/0"
+         }
+       ],
+       "Tags" : [
+         {
+         "Key" : "Name",
+         "Value" : "Barracuda-Security-Group"
+         }]
+      }
+   },
+   "SplunkSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+       "GroupName" : "Splunk-Security-Group",
+       "GroupDescription" : "Allow Inbound traffic to Splunk",
+       "VpcId" : {"Ref": "MyVPC"},
+       "SecurityGroupIngress" : [
+        {
+        "IpProtocol" : "tcp",
+        "FromPort" : 8000,
+        "ToPort" : 8000,
+        "CidrIp" : "0.0.0.0/0"
+        },
+        {
+        "IpProtocol" : "tcp",
+        "FromPort" : 9997,
+        "ToPort" : 9997,
+        "CidrIp" : "0.0.0.0/0"
+        },
+        {
+        "IpProtocol" : "tcp",
+        "FromPort" : 8089,
+        "ToPort" : 8089,
+        "CidrIp" : "0.0.0.0/0"
+        },
+        {
+        "IpProtocol" : "tcp",
+        "FromPort" : 8088,
+        "ToPort" : 8088,
+        "CidrIp" : "0.0.0.0/0"
+        },
+        {
+        "IpProtocol" : "tcp",
+        "FromPort" : 22,
+        "ToPort" : 22,
+        "CidrIp" : "0.0.0.0/0"
+        }],
+       "Tags" : [
+         {
+         "Key" : "Name",
+         "Value" : "Splunk-Security-Group"
+       }]
+       }
+   },
+   "XactaSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+       "GroupName" : "Xacta-Security-Group",
+       "GroupDescription" : "Allow Inbound traffic to Xacta",
+       "VpcId" : {"Ref": "MyVPC"},
+       "SecurityGroupIngress" : [
+        {
+        "IpProtocol" : "tcp",
+        "FromPort" : 443,
+        "ToPort" : 443,
+        "CidrIp" : "0.0.0.0/0"
+        },
+        {
+        "IpProtocol" : "tcp",
+        "FromPort" : 22,
+        "ToPort" : 22,
+        "CidrIp" : "0.0.0.0/0"
+        }
+      ],
+       "Tags" : [
+         {
+         "Key" : "Name",
+         "Value" : "Xacta-Security-Group"
+       }]
+       }
+   },
     "FlowLogRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -778,7 +899,6 @@
         "AccessControl": "LogDeliveryWrite"
       }
     },
-
     "S3Endpoint" : {
       "Type" : "AWS::EC2::VPCEndpoint",
       "Properties" : {
@@ -806,7 +926,6 @@
         "VpcId" : {"Ref": "MyVPC"}
       }
     },
-
     "DoDUser": {
       "Type": "AWS::IAM::User",
       "Properties": {
@@ -1032,7 +1151,7 @@
         "InstanceType": "t2.micro",
         "SecurityGroupIds": [
           {
-            "Ref": "InstanceSecurityGroup"
+            "Ref": "SplunkSecurityGroup"
           }
         ],
         "Tags": [
@@ -1060,7 +1179,7 @@
         "InstanceType": "t2.micro",
         "SecurityGroupIds": [
           {
-            "Ref": "InstanceSecurityGroup"
+            "Ref": "SplunkSecurityGroup"
           }
         ],
         "Tags": [
@@ -1086,7 +1205,7 @@
         "InstanceType": "t2.medium",
         "SecurityGroupIds": [
           {
-            "Ref": "InstanceSecurityGroup"
+            "Ref": "FirewallSecurityGroup"
           }
         ],
         "Tags": [
@@ -1274,7 +1393,7 @@
         "MasterUsername" : { "Ref" : "DBUsername" } ,
         "MasterUserPassword" : { "Ref" : "DBPassword" },
         "DBSubnetGroupName" : { "Ref" : "myDBSubnetGroup" },
-        "VPCSecurityGroups" : [ { "Fn::GetAtt" : [ "InstanceSecurityGroup", "GroupId" ] } ]
+        "VPCSecurityGroups" : [ { "Fn::GetAtt" : [ "XactaSecurityGroup", "GroupId" ] } ]
       }
     }
   },
