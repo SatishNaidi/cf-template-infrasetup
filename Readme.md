@@ -8,3 +8,10 @@
       * BucketForLambdaCode use `newly created S3 Bucket Name`
       * CleanupSnapShotCode use `lambda-cleanup-snapshot.zip`
       * CreateSnapShotCode use `lambda-create-snapshot.zip`
+
+
+# New template for Barracude Instance Creation
+The template Barracuda-InstanceCreation.json will be creating New security group and Creates new EC2 instance in selected subnet  
+
+# New template for Splunk Instances Creation
+The template Splunk-InstanceCreation.json will be creating New security group and Creates two new EC2 instance in selected subnets  
