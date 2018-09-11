@@ -1,0 +1,50 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "myDistribution": {
+      "Type": "AWS::CloudFront::Distribution",
+      "Properties": {
+        "DistributionConfig": {
+          "Origins": [
+            {
+              "CustomOriginConfig": {
+                "HTTPPort": 80,
+                "HTTPSPort": 443,
+                "OriginProtocolPolicy": "http-only"
+              },
+              "DomainName": "cloudfrontbucketcft.s3.amazonaws.com",
+              "Id": "rajumyS3Origin"
+            }
+          ],
+          "Enabled": "true",
+          "Comment": "Some comment",
+          "DefaultRootObject": "index.html",
+          "Logging": {
+            "IncludeCookies": "false",
+            "Bucket": "satish-loggingbucket-101xswt3v33jm.s3.amazonaws.com",
+            "Prefix": "myprefix"
+          },
+          "DefaultCacheBehavior": {
+            "AllowedMethods": [
+              "DELETE",
+              "GET",
+              "HEAD",
+              "OPTIONS",
+              "PATCH",
+              "POST",
+              "PUT"
+            ],
+            "TargetOriginId": "rajumyS3Origin",
+            "ForwardedValues": {
+              "QueryString": "false",
+              "Cookies": {
+                "Forward": "none"
+              }
+            },
+            "ViewerProtocolPolicy": "allow-all"
+          }
+        }
+      }
+    }
+  }
+}
