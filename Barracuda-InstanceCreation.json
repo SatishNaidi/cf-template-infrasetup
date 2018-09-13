@@ -1,5 +1,5 @@
 {
-  "Description": "To Barracude Instance with Custom Security Group",
+  "Description": "To Barracuda Instance with Custom Security Group.",
   "Parameters": {
     "MainTemplateName": {
       "Description": "Name of an active CloudFormation stack that contains the networking resources, such as the subnet and security group, that will be used in this stack.",
@@ -11,7 +11,7 @@
     },
     "EmailID": {
       "Description": "Email address to notify when new logs are published.",
-      "Default": "satishnaidi@gmail.com",
+      "Default": "youremail@domain.com",
       "Type": "String"
     },
     "SSHKeyName": {
@@ -225,7 +225,7 @@
         ]
       }
     },
-    "RecoveryTestAlarm": {
+    "RecoveryEC2Alarm": {
       "Type": "AWS::CloudWatch::Alarm",
       "Properties": {
         "AlarmDescription": "Trigger a recovery when instance status check fails for 15 consecutive minutes.",
@@ -273,6 +273,42 @@
         "Ref": "Barracuda"
       },
       "Description": "instance ID"
+    },
+    "MySNSTopic": {
+      "Value": {
+        "Ref": "MySNSTopic"
+      },
+      "Description": "MySNSTopic"
+    },
+    "CPUAlarm": {
+      "Value": {
+        "Ref": "CPUAlarm"
+      },
+      "Description": "CPUAlarm"
+    },
+    "DiskReads": {
+      "Value": {
+        "Ref": "DiskReads"
+      },
+      "Description": "DiskReads"
+    },
+    "NetworkIn": {
+      "Value": {
+        "Ref": "NetworkIn"
+      },
+      "Description": "NetworkIn"
+    },
+    "NetworkOut": {
+      "Value": {
+        "Ref": "NetworkOut"
+      },
+      "Description": "NetworkOut"
+    },
+    "RecoveryEC2Alarm": {
+      "Value": {
+        "Ref": "RecoveryEC2Alarm"
+      },
+      "Description": "RecoveryEC2Alarm"
     }
   }
 }
