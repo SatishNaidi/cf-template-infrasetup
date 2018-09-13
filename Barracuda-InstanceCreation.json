@@ -2,7 +2,7 @@
   "Description": "To Barracuda Instance with Custom Security Group.",
   "Parameters": {
     "MainTemplateName": {
-      "Description": "Name of an active CloudFormation stack that contains the networking resources, such as the subnet and security group, that will be used in this stack.",
+      "Description": "Name of an active CF stack that was created by Main-CF-Template.json from this repo",
       "Type": "String",
       "MinLength": 1,
       "MaxLength": 255,
