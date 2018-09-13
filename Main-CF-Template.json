@@ -178,7 +178,7 @@
     },
     "BucketForLambdaCode": {
       "Description": "Select the bucket name where the lamdba fucntion code resides",
-      "Default": "mybucket3636",
+      "Default": "mylambda-code-bucket",
       "Type": "String"
     },
     "CleanupSnapShotCode": {

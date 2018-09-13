@@ -1,23 +1,18 @@
 {
   "Description": "To Barracude Instance with Custom Security Group",
-  "Metadata" : {
-    "AWS::CloudFormation::Interface" : {
-      "ParameterGroups" : [
-        {
-          "Label" : { "default" : "VPC And Subnet Selection" },
-          "Parameters" : [ "VpcID","PublicSubnetCIDR"]
-        }
-      ]
-    }
-  },
   "Parameters": {
-    "VpcID": {
-      "Description": "CIDR for the VPC",
-      "Type": "AWS::EC2::VPC::Id"
+    "MainTemplateName": {
+      "Description": "Name of an active CloudFormation stack that contains the networking resources, such as the subnet and security group, that will be used in this stack.",
+      "Type": "String",
+      "MinLength": 1,
+      "MaxLength": 255,
+      "AllowedPattern": "^[a-zA-Z][-a-zA-Z0-9]*$",
+      "Default": "MainTemplate"
     },
-    "PublicSubnetCIDR": {
-      "Description": "CIDR for Public Subnet",
-      "Type": "AWS::EC2::Subnet::Id"
+    "EmailID": {
+      "Description": "Email address to notify when new logs are published.",
+      "Default": "satishnaidi@gmail.com",
+      "Type": "String"
     },
     "SSHKeyName": {
       "Default": "Mumbai",
@@ -27,56 +22,62 @@
     }
   },
   "Resources": {
-    "FirewallSecurityGroup" : {
-      "Type" : "AWS::EC2::SecurityGroup",
-      "Properties" : {
-         "GroupName" : "Barracuda-Security-Group2",
-       "GroupDescription" : "Allow Inbound Traffic to Firewall",
-       "VpcId" : {"Ref": "VpcID"},
-       "SecurityGroupIngress" : [{
-       "IpProtocol" : "tcp",
-       "FromPort" : 807,
-       "ToPort" : 807,
-       "CidrIp" : "0.0.0.0/0"
+    "FirewallSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "Barracuda-Security-Group2",
+        "GroupDescription": "Allow Inbound Traffic to Firewall",
+        "VpcId": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "${MainTemplateName}-MStaaSVPCID"
+          }
         },
-        {
-       "IpProtocol" : "tcp",
-       "FromPort" : 806,
-       "ToPort" : 806,
-       "CidrIp" : "0.0.0.0/0"
-        },
-        {
-       "IpProtocol" : "tcp",
-       "FromPort" : 22,
-       "ToPort" : 22,
-       "CidrIp" : "0.0.0.0/0"
-        },
-        {
-       "IpProtocol" : "tcp",
-       "FromPort" : 443,
-       "ToPort" : 443,
-       "CidrIp" : "0.0.0.0/0"
-        },
-        {
-       "IpProtocol" : "tcp",
-       "FromPort" : 691,
-       "ToPort" : 691,
-       "CidrIp" : "0.0.0.0/0"
-         },
-       {
-       "IpProtocol" : "udp",
-       "FromPort" : 691,
-       "ToPort" : 691,
-       "CidrIp" : "0.0.0.0/0"
-         }
-       ],
-       "Tags" : [
-         {
-         "Key" : "Name",
-         "Value" : "Barracuda-Security-Group"
-         }]
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 807,
+            "ToPort": 807,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 806,
+            "ToPort": 806,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 22,
+            "ToPort": 22,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 443,
+            "ToPort": 443,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 691,
+            "ToPort": 691,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "udp",
+            "FromPort": 691,
+            "ToPort": 691,
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Barracuda-Security-Group"
+          }
+        ]
       }
-   },
+    },
     "Barracuda": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
@@ -84,7 +85,11 @@
         "KeyName": {
           "Ref": "SSHKeyName"
         },
-        "SubnetId": { "Ref": "PublicSubnetCIDR" },
+        "SubnetId": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "${MainTemplateName}-SecuritySubnetAZ1ID"
+          }
+        },
         "InstanceType": "t2.medium",
         "SecurityGroupIds": [
           {
@@ -102,15 +107,171 @@
           }
         ]
       }
+    },
+    "MySNSTopic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "Subscription": [
+          {
+            "Endpoint": {
+              "Ref": "EmailID"
+            },
+            "Protocol": "email"
+          }
+        ]
+      }
+    },
+    "CPUAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "CPU alarm for my instance",
+        "AlarmActions": [
+          {
+            "Ref": "MySNSTopic"
+          }
+        ],
+        "MetricName": "CPUUtilization",
+        "Namespace": "AWS/EC2",
+        "Statistic": "Average",
+        "Period": "60",
+        "EvaluationPeriods": "3",
+        "Threshold": "90",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": [
+          {
+            "Name": "InstanceId",
+            "Value": {
+              "Ref": "Barracuda"
+            }
+          }
+        ]
+      }
+    },
+    "DiskReads": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Disk Reads for my instance",
+        "AlarmActions": [
+          {
+            "Ref": "MySNSTopic"
+          }
+        ],
+        "MetricName": "DiskReadOps",
+        "Namespace": "AWS/EC2",
+        "Statistic": "Average",
+        "Period": "60",
+        "EvaluationPeriods": "3",
+        "Threshold": "90",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": [
+          {
+            "Name": "InstanceId",
+            "Value": {
+              "Ref": "Barracuda"
+            }
+          }
+        ]
+      }
+    },
+    "NetworkIn": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Network In for my instance",
+        "AlarmActions": [
+          {
+            "Ref": "MySNSTopic"
+          }
+        ],
+        "MetricName": "NetworkIn",
+        "Namespace": "AWS/EC2",
+        "Statistic": "Average",
+        "Period": "60",
+        "EvaluationPeriods": "3",
+        "Threshold": "90",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": [
+          {
+            "Name": "InstanceId",
+            "Value": {
+              "Ref": "Barracuda"
+            }
+          }
+        ]
+      }
+    },
+    "NetworkOut": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "NetworkOut for my instance",
+        "AlarmActions": [
+          {
+            "Ref": "MySNSTopic"
+          }
+        ],
+        "MetricName": "NetworkOut",
+        "Namespace": "AWS/EC2",
+        "Statistic": "Average",
+        "Period": "60",
+        "EvaluationPeriods": "3",
+        "Threshold": "90",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Dimensions": [
+          {
+            "Name": "InstanceId",
+            "Value": {
+              "Ref": "Barracuda"
+            }
+          }
+        ]
+      }
+    },
+    "RecoveryTestAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Trigger a recovery when instance status check fails for 15 consecutive minutes.",
+        "Namespace": "AWS/EC2",
+        "MetricName": "StatusCheckFailed_Instance",
+        "Statistic": "Minimum",
+        "Period": "60",
+        "EvaluationPeriods": "15",
+        "ComparisonOperator": "GreaterThanThreshold",
+        "Threshold": "0",
+        "AlarmActions": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:automate:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":ec2:recover"
+              ]
+            ]
+          }
+        ],
+        "Dimensions": [
+          {
+            "Name": "InstanceId",
+            "Value": {
+              "Ref": "Barracuda"
+            }
+          }
+        ]
+      }
     }
   },
   "Outputs": {
     "FirewallSecurityGroup": {
       "Description": "Barracude Instance Security Group",
-      "Value": {"Ref": "FirewallSecurityGroup"}
+      "Value": {
+        "Ref": "FirewallSecurityGroup"
+      }
     },
     "BarracudaInstnaceId": {
-      "Value": {"Ref": "Barracuda"},
+      "Value": {
+        "Ref": "Barracuda"
+      },
       "Description": "instance ID"
     }
   }
