@@ -1,42 +1,85 @@
 {
   "Description": "To Create VPCs, along with 2 Private and 2 Public Subnets",
-  "Metadata" : {
-    "AWS::CloudFormation::Interface" : {
-      "ParameterGroups" : [
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
         {
-          "Label" : { "default" : "Project and Tag" },
-          "Parameters" : [ "aProjectName"]
-        },
-        {
-          "Label" : { "default" : "VPC Configuration" },
-          "Parameters" : [ 
-            "VpcCIDR", "AZs", "PublicSubnet1CIDR","PublicSubnet2CIDR",
-            "PrivateSubnet1CIDR","PrivateSubnet2CIDR" ,"RetentionInDays", "VPCTrafficType"
+          "Label": {
+            "default": "Project and Tag"
+          },
+          "Parameters": [
+            "aProjectName"
           ]
         },
         {
-          "Label" : { "default":"Buckets Configuation" },
-          "Parameters" : [ "MoveToGlacierAfrDays", "DeleteFromGlacierAfrDays"]
+          "Label": {
+            "default": "VPC Configuration"
+          },
+          "Parameters": [
+            "VpcCIDR",
+            "AZs",
+            "PublicSubnet1CIDR",
+            "PublicSubnet2CIDR",
+            "PrivateSubnet1CIDR",
+            "PrivateSubnet2CIDR",
+            "RetentionInDays",
+            "VPCTrafficType"
+          ]
         },
         {
-          "Label" : { "default":"IAM Configuration" },
-          "Parameters" : [ "Password"]
+          "Label": {
+            "default": "Buckets Configuation"
+          },
+          "Parameters": [
+            "MoveToGlacierAfrDays",
+            "DeleteFromGlacierAfrDays"
+          ]
         },
         {
-          "Label" : { "default":"EC2 Configuration" },
-          "Parameters" : [ "SSHKeyName"]
+          "Label": {
+            "default": "IAM Configuration"
+          },
+          "Parameters": [
+            "Password"
+          ]
         },
         {
-          "Label" : { "default":"CloudTrail Configuration" },
-          "Parameters" : [ "OperatorEmail"]
+          "Label": {
+            "default": "EC2 Configuration"
+          },
+          "Parameters": [
+            "SSHKeyName"
+          ]
         },
         {
-          "Label" : { "default":"Lambda Configuration" },
-          "Parameters" : [ "BucketForLambdaCode","CleanupSnapShotCode","CreateSnapShotCode" ]
+          "Label": {
+            "default": "CloudTrail Configuration"
+          },
+          "Parameters": [
+            "OperatorEmail"
+          ]
         },
         {
-          "Label" : { "default":"PostGreSQL Configuration" },
-          "Parameters" : [ "DBName", "DBUsername","DBPassword","DBClass","DBAllocatedStorage"]
+          "Label": {
+            "default": "Lambda Configuration"
+          },
+          "Parameters": [
+            "BucketForLambdaCode",
+            "CleanupSnapShotCode",
+            "CreateSnapShotCode"
+          ]
+        },
+        {
+          "Label": {
+            "default": "PostGreSQL Configuration"
+          },
+          "Parameters": [
+            "DBName",
+            "DBUsername",
+            "DBPassword",
+            "DBClass",
+            "DBAllocatedStorage"
+          ]
         }
       ]
     }
@@ -81,18 +124,36 @@
       "Description": "Specifies the number of days you want to retain Flow log events?",
       "Type": "Number",
       "Default": 14,
-      "AllowedValues": [1,3,5,7,14,30,60,90,120,150,180,365,400,545,731,1827,3653]
+      "AllowedValues": [
+        1,
+        3,
+        5,
+        7,
+        14,
+        30,
+        60,
+        90,
+        120,
+        150,
+        180,
+        365,
+        400,
+        545,
+        731,
+        1827,
+        3653
+      ]
     },
     "VPCTrafficType": {
       "Description": "The type of VPC traffic to log.",
       "Type": "String",
       "Default": "REJECT",
       "AllowedValues": [
-          "ACCEPT",
-          "REJECT",
-          "ALL"
-        ]
-      },
+        "ACCEPT",
+        "REJECT",
+        "ALL"
+      ]
+    },
     "SSHKeyName": {
       "Default": "Mumbai",
       "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
@@ -111,23 +172,23 @@
     },
     "OperatorEmail": {
       "Description": "Email address to notify when new logs are published.",
-      "Default":"youremail@domain.com",
+      "Default": "youremail@domain.com",
       "Type": "String"
     },
     "BucketForLambdaCode": {
       "Description": "Select the bucket name where the lamdba fucntion code resides",
-      "Default":"aws-saketh-lambda",
+      "Default": "aws-saketh-lambda",
       "Type": "String"
     },
     "CleanupSnapShotCode": {
       "Description": "Select the Key name in the bucket to consume the code, Code Should be uploaded to Bucker Prior",
-      "Default":"lambda-cleanup-snapshot.zip",
+      "Default": "lambda-cleanup-snapshot.zip",
       "Type": "String"
     },
     "CreateSnapShotCode": {
       "Description": "Select the Key name in the bucket to consume the code, Code Should be uploaded to Bucker Prior",
       "Type": "String",
-      "Default":"lambda-create-snapshot.zip"
+      "Default": "lambda-create-snapshot.zip"
     },
     "Password": {
       "NoEcho": "true",
@@ -140,54 +201,59 @@
     },
     "DBName": {
       "Default": "pgdb",
-      "Description" : "The database name",
+      "Description": "The database name",
       "Type": "String",
       "MinLength": "1",
       "MaxLength": "8",
-      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
-      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+      "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters."
     },
-
     "DBUsername": {
       "Default": "root",
       "NoEcho": "true",
-      "Description" : "The database admin account username",
+      "Description": "The database admin account username",
       "Type": "String",
       "MinLength": "1",
       "MaxLength": "16",
-      "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
-      "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+      "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+      "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters."
     },
-
     "DBPassword": {
       "Default": "root1234",
       "NoEcho": "true",
-      "Description" : "The database admin account password",
+      "Description": "The database admin account password",
       "Type": "String",
       "MinLength": "8"
     },
-
-    "DBClass" : {
-      "Default" : "db.t2.small",
-      "Description" : "Database instance class",
-      "Type" : "String",
-      "AllowedValues" : [ "db.t2.small", "db.m1.small", "db.m1.large", "db.m1.xlarge", "db.m2.xlarge" ],
-      "ConstraintDescription" : "must select a valid database instance type."
+    "DBClass": {
+      "Default": "db.t2.small",
+      "Description": "Database instance class",
+      "Type": "String",
+      "AllowedValues": [
+        "db.t2.small",
+        "db.m1.small",
+        "db.m1.large",
+        "db.m1.xlarge",
+        "db.m2.xlarge"
+      ],
+      "ConstraintDescription": "must select a valid database instance type."
     },
-
-    "DBAllocatedStorage" : {
+    "DBAllocatedStorage": {
       "Default": "5",
-      "Description" : "The size of the database (Gb)",
+      "Description": "The size of the database (Gb)",
       "Type": "Number",
       "MinValue": "5",
       "MaxValue": "6144",
-      "ConstraintDescription" : "must be between 5+"
+      "ConstraintDescription": "must be between 5+"
     }
   },
   "Resources": {
     "cloudtrail": {
       "Type": "AWS::S3::Bucket",
-      "Metadata" : { "Object1" : "Location1",  "Object2" : "Location2" },
+      "Metadata": {
+        "Object1": "Location1",
+        "Object2": "Location2"
+      },
       "Properties": {
         "BucketEncryption": {
           "ServerSideEncryptionConfiguration": [
@@ -239,7 +305,17 @@
                 "Service": "cloudtrail.amazonaws.com"
               },
               "Action": "s3:GetBucketAcl",
-              "Resource": { "Fn::Join": ["",["arn:aws:s3:::",{"Ref": "cloudtrail"}]]}
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "cloudtrail"
+                    }
+                  ]
+                ]
+              }
             },
             {
               "Sid": "AWSCloudTrailWrite",
@@ -248,9 +324,26 @@
                 "Service": "cloudtrail.amazonaws.com"
               },
               "Action": "s3:PutObject",
-              "Resource": {"Fn::Join": ["",["arn:aws:s3:::",{"Ref": "cloudtrail"},"/AWSLogs/",{"Ref": "AWS::AccountId"},"/*"]]},
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "cloudtrail"
+                    },
+                    "/AWSLogs/",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    "/*"
+                  ]
+                ]
+              },
               "Condition": {
-                "StringEquals": {"s3:x-amz-acl": "bucket-owner-full-control"}
+                "StringEquals": {
+                  "s3:x-amz-acl": "bucket-owner-full-control"
+                }
               }
             }
           ]
@@ -305,7 +398,10 @@
           "Ref": "cloudtrail"
         },
         "SnsTopicName": {
-          "Fn::GetAtt": ["Topic","TopicName"]
+          "Fn::GetAtt": [
+            "Topic",
+            "TopicName"
+          ]
         },
         "IsLogging": true
       }
@@ -321,7 +417,9 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Ref": "aProjectName"}
+            "Value": {
+              "Ref": "aProjectName"
+            }
           }
         ]
       }
@@ -332,7 +430,9 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": { "Ref": "aProjectName"}
+            "Value": {
+              "Ref": "aProjectName"
+            }
           }
         ]
       }
@@ -343,20 +443,35 @@
         "InternetGatewayId": {
           "Ref": "InternetGateway"
         },
-        "VpcId": {"Ref": "MyVPC"}
+        "VpcId": {
+          "Ref": "MyVPC"
+        }
       }
     },
     "PublicSubnet1": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
-        "VpcId": {"Ref": "MyVPC"},
-        "AvailabilityZone": {"Fn::Select": [ "0",{"Ref": "AZs"}]},
-        "CidrBlock": {"Ref": "PublicSubnet1CIDR"},
+        "VpcId": {
+          "Ref": "MyVPC"
+        },
+        "AvailabilityZone": {
+          "Fn::Select": [
+            "0",
+            {
+              "Ref": "AZs"
+            }
+          ]
+        },
+        "CidrBlock": {
+          "Ref": "PublicSubnet1CIDR"
+        },
         "MapPublicIpOnLaunch": true,
         "Tags": [
           {
             "Key": "Name",
-            "Value": {"Fn::Sub": "${aProjectName} Public Subnet (AZ1)"}
+            "Value": {
+              "Fn::Sub": "${aProjectName} Public Subnet (AZ1)"
+            }
           }
         ]
       }
@@ -367,13 +482,24 @@
         "VpcId": {
           "Ref": "MyVPC"
         },
-        "AvailabilityZone": {"Fn::Select": ["1",{"Ref": "AZs"}]},
-        "CidrBlock": {"Ref": "PublicSubnet2CIDR"},
+        "AvailabilityZone": {
+          "Fn::Select": [
+            "1",
+            {
+              "Ref": "AZs"
+            }
+          ]
+        },
+        "CidrBlock": {
+          "Ref": "PublicSubnet2CIDR"
+        },
         "MapPublicIpOnLaunch": true,
         "Tags": [
           {
             "Key": "Name",
-            "Value": {"Fn::Sub": "${aProjectName} Public Subnet (AZ2)"}
+            "Value": {
+              "Fn::Sub": "${aProjectName} Public Subnet (AZ2)"
+            }
           }
         ]
       }
@@ -385,7 +511,8 @@
           "Ref": "MyVPC"
         },
         "AvailabilityZone": {
-          "Fn::Select": ["0",
+          "Fn::Select": [
+            "0",
             {
               "Ref": "AZs"
             }
@@ -412,7 +539,12 @@
           "Ref": "MyVPC"
         },
         "AvailabilityZone": {
-          "Fn::Select": ["1",{"Ref": "AZs"}]
+          "Fn::Select": [
+            "1",
+            {
+              "Ref": "AZs"
+            }
+          ]
         },
         "CidrBlock": {
           "Ref": "PrivateSubnet2CIDR"
@@ -421,7 +553,9 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": {"Fn::Sub": "${aProjectName} Private Subnet (AZ2)"}
+            "Value": {
+              "Fn::Sub": "${aProjectName} Private Subnet (AZ2)"
+            }
           }
         ]
       }
@@ -601,7 +735,9 @@
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
         "GroupDescription": "Allow HTTP and SSH traffic Host attached",
-        "VpcId": {"Ref": "MyVPC"},
+        "VpcId": {
+          "Ref": "MyVPC"
+        },
         "SecurityGroupIngress": [
           {
             "IpProtocol": "tcp",
@@ -616,10 +752,12 @@
             "CidrIp": "0.0.0.0/0"
           },
           {
-            "IpProtocol" : "tcp",
-            "FromPort"   : 5432,
-            "ToPort"     : 5432,
-            "CidrIp"     : {"Ref": "VpcCIDR"}
+            "IpProtocol": "tcp",
+            "FromPort": 5432,
+            "ToPort": 5432,
+            "CidrIp": {
+              "Ref": "VpcCIDR"
+            }
           }
         ],
         "SecurityGroupEgress": [
@@ -638,127 +776,138 @@
         ]
       }
     },
-    "FirewallSecurityGroup" : {
-      "Type" : "AWS::EC2::SecurityGroup",
-      "Properties" : {
-         "GroupName" : "Barracuda-Security-Group",
-       "GroupDescription" : "Allow Inbound Traffic to Firewall",
-       "VpcId" : {"Ref": "MyVPC"},
-       "SecurityGroupIngress" : [{
-       "IpProtocol" : "tcp",
-       "FromPort" : 807,
-       "ToPort" : 807,
-       "CidrIp" : "0.0.0.0/0"
+    "FirewallSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "Barracuda-Security-Group",
+        "GroupDescription": "Allow Inbound Traffic to Firewall",
+        "VpcId": {
+          "Ref": "MyVPC"
         },
-        {
-       "IpProtocol" : "tcp",
-       "FromPort" : 806,
-       "ToPort" : 806,
-       "CidrIp" : "0.0.0.0/0"
-        },
-        {
-       "IpProtocol" : "tcp",
-       "FromPort" : 22,
-       "ToPort" : 22,
-       "CidrIp" : "0.0.0.0/0"
-        },
-        {
-       "IpProtocol" : "tcp",
-       "FromPort" : 443,
-       "ToPort" : 443,
-       "CidrIp" : "0.0.0.0/0"
-        },
-        {
-       "IpProtocol" : "tcp",
-       "FromPort" : 691,
-       "ToPort" : 691,
-       "CidrIp" : "0.0.0.0/0"
-         },
-       {
-       "IpProtocol" : "udp",
-       "FromPort" : 691,
-       "ToPort" : 691,
-       "CidrIp" : "0.0.0.0/0"
-         }
-       ],
-       "Tags" : [
-         {
-         "Key" : "Name",
-         "Value" : "Barracuda-Security-Group"
-         }]
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 807,
+            "ToPort": 807,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 806,
+            "ToPort": 806,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 22,
+            "ToPort": 22,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 443,
+            "ToPort": 443,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 691,
+            "ToPort": 691,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "udp",
+            "FromPort": 691,
+            "ToPort": 691,
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Barracuda-Security-Group"
+          }
+        ]
       }
-   },
-   "SplunkSecurityGroup" : {
-      "Type" : "AWS::EC2::SecurityGroup",
-      "Properties" : {
-       "GroupName" : "Splunk-Security-Group",
-       "GroupDescription" : "Allow Inbound traffic to Splunk",
-       "VpcId" : {"Ref": "MyVPC"},
-       "SecurityGroupIngress" : [
-        {
-        "IpProtocol" : "tcp",
-        "FromPort" : 8000,
-        "ToPort" : 8000,
-        "CidrIp" : "0.0.0.0/0"
+    },
+    "SplunkSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "Splunk-Security-Group",
+        "GroupDescription": "Allow Inbound traffic to Splunk",
+        "VpcId": {
+          "Ref": "MyVPC"
         },
-        {
-        "IpProtocol" : "tcp",
-        "FromPort" : 9997,
-        "ToPort" : 9997,
-        "CidrIp" : "0.0.0.0/0"
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 8000,
+            "ToPort": 8000,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 9997,
+            "ToPort": 9997,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 8089,
+            "ToPort": 8089,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 8088,
+            "ToPort": 8088,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 22,
+            "ToPort": 22,
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Splunk-Security-Group"
+          }
+        ]
+      }
+    },
+    "XactaSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "Xacta-Security-Group",
+        "GroupDescription": "Allow Inbound traffic to Xacta",
+        "VpcId": {
+          "Ref": "MyVPC"
         },
-        {
-        "IpProtocol" : "tcp",
-        "FromPort" : 8089,
-        "ToPort" : 8089,
-        "CidrIp" : "0.0.0.0/0"
-        },
-        {
-        "IpProtocol" : "tcp",
-        "FromPort" : 8088,
-        "ToPort" : 8088,
-        "CidrIp" : "0.0.0.0/0"
-        },
-        {
-        "IpProtocol" : "tcp",
-        "FromPort" : 22,
-        "ToPort" : 22,
-        "CidrIp" : "0.0.0.0/0"
-        }],
-       "Tags" : [
-         {
-         "Key" : "Name",
-         "Value" : "Splunk-Security-Group"
-       }]
-       }
-   },
-   "XactaSecurityGroup" : {
-      "Type" : "AWS::EC2::SecurityGroup",
-      "Properties" : {
-       "GroupName" : "Xacta-Security-Group",
-       "GroupDescription" : "Allow Inbound traffic to Xacta",
-       "VpcId" : {"Ref": "MyVPC"},
-       "SecurityGroupIngress" : [
-        {
-        "IpProtocol" : "tcp",
-        "FromPort" : 443,
-        "ToPort" : 443,
-        "CidrIp" : "0.0.0.0/0"
-        },
-        {
-        "IpProtocol" : "tcp",
-        "FromPort" : 22,
-        "ToPort" : 22,
-        "CidrIp" : "0.0.0.0/0"
-        }
-      ],
-       "Tags" : [
-         {
-         "Key" : "Name",
-         "Value" : "Xacta-Security-Group"
-       }]
-       }
-   },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 443,
+            "ToPort": 443,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 22,
+            "ToPort": 22,
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Xacta-Security-Group"
+          }
+        ]
+      }
+    },
     "FlowLogRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -777,44 +926,55 @@
           ]
         },
         "Policies": [
-            {
-              "PolicyName": "flowlogs-policy",
-              "PolicyDocument": {
-                "Version": "2012-10-17",
-                "Statement": [
-                  {
-                    "Effect": "Allow",
-                    "Action": [
-                      "logs:CreateLogGroup",
-                      "logs:CreateLogStream",
-                      "logs:PutLogEvents",
-                      "logs:DescribeLogGroups",
-                      "logs:DescribeLogStreams"
-                    ],
-                    "Resource": "*"
-                  }
-                ]
-              }
+          {
+            "PolicyName": "flowlogs-policy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents",
+                    "logs:DescribeLogGroups",
+                    "logs:DescribeLogStreams"
+                  ],
+                  "Resource": "*"
+                }
+              ]
             }
-          ]
-        }
-      },
-    "FlowLogGroup": {
-        "Type": "AWS::Logs::LogGroup",
-        "Properties": {
-            "RetentionInDays": {"Ref": "RetentionInDays"}
-        }
+          }
+        ]
+      }
     },
-    "MyFlowLog" : {
-        "Type" : "AWS::EC2::FlowLog",
-        "Properties" : {
-          "DeliverLogsPermissionArn" : { "Fn::GetAtt" : ["FlowLogRole", "Arn"] },
-          "LogGroupName" : "FlowLogGroup",
-          "ResourceId" : { "Ref" : "MyVPC" },
-          "ResourceType" : "VPC",
-          "TrafficType" : {"Ref": "VPCTrafficType"}
+    "FlowLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "RetentionInDays": {
+          "Ref": "RetentionInDays"
         }
-      },
+      }
+    },
+    "MyFlowLog": {
+      "Type": "AWS::EC2::FlowLog",
+      "Properties": {
+        "DeliverLogsPermissionArn": {
+          "Fn::GetAtt": [
+            "FlowLogRole",
+            "Arn"
+          ]
+        },
+        "LogGroupName": "FlowLogGroup",
+        "ResourceId": {
+          "Ref": "MyVPC"
+        },
+        "ResourceType": "VPC",
+        "TrafficType": {
+          "Ref": "VPCTrafficType"
+        }
+      }
+    },
     "DataBucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
@@ -838,10 +998,14 @@
                   "TransitionInDays": 1
                 }
               ],
-              "ExpirationInDays": {"Ref": "DeleteFromGlacierAfrDays"},
+              "ExpirationInDays": {
+                "Ref": "DeleteFromGlacierAfrDays"
+              },
               "Transitions": [
                 {
-                  "TransitionInDays": {"Ref": "MoveToGlacierAfrDays"},
+                  "TransitionInDays": {
+                    "Ref": "MoveToGlacierAfrDays"
+                  },
                   "StorageClass": "Glacier"
                 }
               ]
@@ -851,14 +1015,18 @@
         "Tags": [
           {
             "Key": "Project",
-            "Value": {"Fn::Sub": "${aProjectName}"}
+            "Value": {
+              "Fn::Sub": "${aProjectName}"
+            }
           }
         ],
         "VersioningConfiguration": {
           "Status": "Enabled"
         },
         "LoggingConfiguration": {
-          "DestinationBucketName": {"Ref": "LoggingBucket"},
+          "DestinationBucketName": {
+            "Ref": "LoggingBucket"
+          },
           "LogFilePrefix": "access-logs"
         }
       }
@@ -886,10 +1054,14 @@
                   "TransitionInDays": 1
                 }
               ],
-              "ExpirationInDays": {"Ref": "DeleteFromGlacierAfrDays"},
+              "ExpirationInDays": {
+                "Ref": "DeleteFromGlacierAfrDays"
+              },
               "Transitions": [
                 {
-                  "TransitionInDays": {"Ref": "MoveToGlacierAfrDays"},
+                  "TransitionInDays": {
+                    "Ref": "MoveToGlacierAfrDays"
+                  },
                   "StorageClass": "Glacier"
                 }
               ]
@@ -899,38 +1071,95 @@
         "AccessControl": "LogDeliveryWrite"
       }
     },
-    "S3Endpoint" : {
-      "Type" : "AWS::EC2::VPCEndpoint",
-      "Properties" : {
-        "PolicyDocument" : {
-          "Version":"2012-10-17",
-          "Statement":[
+    "S3Endpoint": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
             {
-            "Effect":"Allow",
-            "Principal": "*",
-            "Action":["s3:GetObject"],
-            "Resource": [ 
-              { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "DataBucket"},"/*"]]},
-              { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "LoggingBucket"},"/*"]]},
-              { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "cloudtrail"},"/*"]]}
-            ]
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": [
+                "s3:GetObject"
+              ],
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "DataBucket"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "LoggingBucket"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "cloudtrail"
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              ]
             }
           ]
         },
-        "RouteTableIds" : [ 
-          {"Ref": "PublicRouteTable"},
-          {"Ref": "PrivateRouteTable1"},
-          {"Ref": "PrivateRouteTable2"}
-         ],
-        "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".s3" ] ] },
-        "VpcId" : {"Ref": "MyVPC"}
+        "RouteTableIds": [
+          {
+            "Ref": "PublicRouteTable"
+          },
+          {
+            "Ref": "PrivateRouteTable1"
+          },
+          {
+            "Ref": "PrivateRouteTable2"
+          }
+        ],
+        "ServiceName": {
+          "Fn::Join": [
+            "",
+            [
+              "com.amazonaws.",
+              {
+                "Ref": "AWS::Region"
+              },
+              ".s3"
+            ]
+          ]
+        },
+        "VpcId": {
+          "Ref": "MyVPC"
+        }
       }
     },
     "DoDUser": {
       "Type": "AWS::IAM::User",
       "Properties": {
         "LoginProfile": {
-          "Password": {"Ref": "Password"}}
+          "Password": {
+            "Ref": "Password"
+          }
+        }
       }
     },
     "DoDUserGroup": {
@@ -943,7 +1172,9 @@
           "Ref": "DoDUserGroup"
         },
         "Users": [
-          {"Ref": "DoDUser"}
+          {
+            "Ref": "DoDUser"
+          }
         ]
       }
     },
@@ -967,7 +1198,17 @@
                 "s3:GetBucketLocation"
               ],
               "Resource": [
-                {"Fn::Join": ["",["arn:aws:s3:::",{"Ref": "DataBucket"}]]}
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "DataBucket"
+                      }
+                    ]
+                  ]
+                }
               ]
             },
             {
@@ -980,27 +1221,44 @@
                 "s3:DeleteObject"
               ],
               "Resource": [
-                {"Fn::Join": ["",["arn:aws:s3:::",{"Ref": "DataBucket"},"/*"]]}
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "DataBucket"
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
               ]
             }
           ]
         },
         "Groups": [
-          {"Ref": "DoDUserGroup"}
+          {
+            "Ref": "DoDUserGroup"
+          }
         ]
       }
     },
     "DoDKeys": {
       "Type": "AWS::IAM::AccessKey",
       "Properties": {
-        "UserName": {"Ref": "DoDUser"}
+        "UserName": {
+          "Ref": "DoDUser"
+        }
       }
     },
     "Admin1User": {
       "Type": "AWS::IAM::User",
       "Properties": {
         "LoginProfile": {
-          "Password": {"Ref": "Password"}
+          "Password": {
+            "Ref": "Password"
+          }
         }
       }
     },
@@ -1010,9 +1268,13 @@
     "Users2": {
       "Type": "AWS::IAM::UserToGroupAddition",
       "Properties": {
-        "GroupName": {"Ref": "Admin1UserGroup"},
+        "GroupName": {
+          "Ref": "Admin1UserGroup"
+        },
         "Users": [
-          {"Ref": "Admin1User"}
+          {
+            "Ref": "Admin1User"
+          }
         ]
       }
     },
@@ -1035,10 +1297,40 @@
                 "s3:ListBucket",
                 "s3:GetBucketLocation"
               ],
-              "Resource": [ 
-                { "Fn::Join": ["",["arn:aws:s3:::",{"Ref": "DataBucket"}]]},
-                {"Fn::Join": ["",["arn:aws:s3:::",{"Ref": "LoggingBucket"}]]},
-                {"Fn::Join": ["",["arn:aws:s3:::",{"Ref": "cloudtrail"}]]}
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "DataBucket"
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "LoggingBucket"
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "cloudtrail"
+                      }
+                    ]
+                  ]
+                }
               ]
             },
             {
@@ -1051,29 +1343,68 @@
                 "s3:DeleteObject"
               ],
               "Resource": [
-                {"Fn::Join": ["",["arn:aws:s3:::",{"Ref": "DataBucket"},"/*"]]},
-                {"Fn::Join": ["",["arn:aws:s3:::",{"Ref": "LoggingBucket"},"/*"]]},
-                {"Fn::Join": ["",["arn:aws:s3:::",{"Ref": "cloudtrail"},"/*"]]}
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "DataBucket"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "LoggingBucket"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "cloudtrail"
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
               ]
             }
           ]
         },
         "Groups": [
-          {"Ref": "Admin1UserGroup"}
+          {
+            "Ref": "Admin1UserGroup"
+          }
         ]
       }
     },
     "Admin1Keys": {
       "Type": "AWS::IAM::AccessKey",
       "Properties": {
-        "UserName": {"Ref": "Admin1User"}
+        "UserName": {
+          "Ref": "Admin1User"
+        }
       }
     },
     "SecurityUser": {
       "Type": "AWS::IAM::User",
       "Properties": {
         "LoginProfile": {
-          "Password": {"Ref": "Password"}
+          "Password": {
+            "Ref": "Password"
+          }
         }
       }
     },
@@ -1083,9 +1414,13 @@
     "Users3": {
       "Type": "AWS::IAM::UserToGroupAddition",
       "Properties": {
-        "GroupName": { "Ref": "SecurityUserGroup" },
+        "GroupName": {
+          "Ref": "SecurityUserGroup"
+        },
         "Users": [
-          {"Ref": "SecurityUser"}
+          {
+            "Ref": "SecurityUser"
+          }
         ]
       }
     },
@@ -1109,7 +1444,17 @@
                 "s3:GetBucketLocation"
               ],
               "Resource": [
-                { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "cloudtrail"}]]}
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "cloudtrail"
+                      }
+                    ]
+                  ]
+                }
               ]
             },
             {
@@ -1122,12 +1467,27 @@
                 "s3:DeleteObject"
               ],
               "Resource": [
-                { "Fn::Join": [ "", ["arn:aws:s3:::",{"Ref": "cloudtrail"},"/*"]]}
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:aws:s3:::",
+                      {
+                        "Ref": "cloudtrail"
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
               ]
             }
           ]
         },
-        "Groups": [{"Ref": "SecurityUserGroup"}]
+        "Groups": [
+          {
+            "Ref": "SecurityUserGroup"
+          }
+        ]
       }
     },
     "SecurityKeys": {
@@ -1201,7 +1561,9 @@
         "KeyName": {
           "Ref": "SSHKeyName"
         },
-        "SubnetId": { "Ref": "PublicSubnet1" },
+        "SubnetId": {
+          "Ref": "PublicSubnet1"
+        },
         "InstanceType": "t2.medium",
         "SecurityGroupIds": [
           {
@@ -1242,33 +1604,33 @@
             "PolicyDocument": {
               "Version": "2012-10-17",
               "Statement": [
-                  {
-                      "Effect": "Allow",
-                      "Action": "logs:CreateLogGroup",
-                      "Resource": "*"
-                  },
-                  {
-                      "Effect": "Allow",
-                      "Action": [
-                        "ec2:Describe*",
-                        "ec2:CreateSnapshot",
-                        "ec2:DeleteSnapshot",
-                        "ec2:CreateTags",
-                        "tag:AddResourceTags",
-                        "tag:RemoveResourceTags",
-                        "tag:TagResources",
-                        "tag:UntagResources"
-                      ],
-                      "Resource": "*"
-                  },
-                  {
-                      "Effect": "Allow",
-                      "Action": [
-                          "logs:CreateLogStream",
-                          "logs:PutLogEvents"
-                      ],
-                      "Resource":"*"
-                  }
+                {
+                  "Effect": "Allow",
+                  "Action": "logs:CreateLogGroup",
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ec2:Describe*",
+                    "ec2:CreateSnapshot",
+                    "ec2:DeleteSnapshot",
+                    "ec2:CreateTags",
+                    "tag:AddResourceTags",
+                    "tag:RemoveResourceTags",
+                    "tag:TagResources",
+                    "tag:UntagResources"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": "*"
+                }
               ]
             }
           }
@@ -1278,28 +1640,46 @@
     "cleanupsnapshot": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
-          "Code": {
-              "S3Bucket":  { "Ref": "BucketForLambdaCode" },
-              "S3Key": { "Ref": "CleanupSnapShotCode" }
-          },
-          "MemorySize": 128,
-          "Handler": "lambda-cleanup-snapshot.lambda_handler",
-          "Role": {"Fn::GetAtt" : ["LambdaExecutionRole", "Arn"] },
-          "Timeout": 3,
-          "Runtime": "python2.7",
-          "Description": "lambda-cleanup-snapshot"
-      }
-  },
-  "createsnapshot": {  
-    "Type": "AWS::Lambda::Function",
-    "Properties": {
         "Code": {
-            "S3Bucket":  { "Ref": "BucketForLambdaCode" },
-            "S3Key": { "Ref": "CreateSnapShotCode" }
+          "S3Bucket": {
+            "Ref": "BucketForLambdaCode"
+          },
+          "S3Key": {
+            "Ref": "CleanupSnapShotCode"
+          }
+        },
+        "MemorySize": 128,
+        "Handler": "lambda-cleanup-snapshot.lambda_handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaExecutionRole",
+            "Arn"
+          ]
+        },
+        "Timeout": 3,
+        "Runtime": "python2.7",
+        "Description": "lambda-cleanup-snapshot"
+      }
+    },
+    "createsnapshot": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "BucketForLambdaCode"
+          },
+          "S3Key": {
+            "Ref": "CreateSnapShotCode"
+          }
         },
         "MemorySize": 128,
         "Handler": "lambda-create-snapshot.lambda_handler",
-        "Role": {"Fn::GetAtt" : ["LambdaExecutionRole", "Arn"] },
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaExecutionRole",
+            "Arn"
+          ]
+        },
         "Timeout": 3,
         "Runtime": "python2.7",
         "Description": "lambda-cleanup-snapshot"
@@ -1311,33 +1691,62 @@
         "Description": "ScheduledRule",
         "ScheduleExpression": "rate(1 day)",
         "State": "ENABLED",
-        "Targets": [{
-          "Arn": { "Fn::GetAtt": ["cleanupsnapshot", "Arn"] },
-          "Id": {"Ref":"cleanupsnapshot"}
-        },
-        {
-          "Arn": { "Fn::GetAtt": ["createsnapshot", "Arn"] },
-          "Id": {"Ref":"createsnapshot"}
-        }
-      ]
+        "Targets": [
+          {
+            "Arn": {
+              "Fn::GetAtt": [
+                "cleanupsnapshot",
+                "Arn"
+              ]
+            },
+            "Id": {
+              "Ref": "cleanupsnapshot"
+            }
+          },
+          {
+            "Arn": {
+              "Fn::GetAtt": [
+                "createsnapshot",
+                "Arn"
+              ]
+            },
+            "Id": {
+              "Ref": "createsnapshot"
+            }
+          }
+        ]
       }
     },
     "PermissionForEventsToInvokeLambda1": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
-        "FunctionName": {"Ref":"cleanupsnapshot"},
+        "FunctionName": {
+          "Ref": "cleanupsnapshot"
+        },
         "Action": "lambda:InvokeFunction",
         "Principal": "events.amazonaws.com",
-        "SourceArn": { "Fn::GetAtt": ["ScheduledRule", "Arn"] }
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "ScheduledRule",
+            "Arn"
+          ]
+        }
       }
     },
     "PermissionForEventsToInvokeLambda2": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
-        "FunctionName": {"Ref":"createsnapshot"},
+        "FunctionName": {
+          "Ref": "createsnapshot"
+        },
         "Action": "lambda:InvokeFunction",
         "Principal": "events.amazonaws.com",
-        "SourceArn": { "Fn::GetAtt": ["ScheduledRule", "Arn"] }
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "ScheduledRule",
+            "Arn"
+          ]
+        }
       }
     },
     "RdsMonitoringRole": {
@@ -1362,27 +1771,37 @@
         "Path": "/"
       }
     },
-    "myDBSubnetGroup" : {
-      "Type" : "AWS::RDS::DBSubnetGroup",
-      "Properties" : {
-         "DBSubnetGroupDescription" : "DB Private Subnet",
-         "SubnetIds" : [
-           {"Ref": "PrivateSubnet1"},
-           {"Ref": "PrivateSubnet2"}
-          ]
+    "myDBSubnetGroup": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "DB Private Subnet",
+        "SubnetIds": [
+          {
+            "Ref": "PrivateSubnet1"
+          },
+          {
+            "Ref": "PrivateSubnet2"
+          }
+        ]
       }
     },
-    "pgDB" : {
-      "Type" : "AWS::RDS::DBInstance",
-      "Properties" : {
-        "DBName" : { "Ref" : "DBName" },
-        "AllocatedStorage" : { "Ref" : "DBAllocatedStorage" },
-        "DBInstanceClass" : { "Ref" : "DBClass" },
-        "Engine" : "postgres",
-        "EngineVersion":"10.3",
-        "StorageType" : "gp2",
+    "pgDB": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "DBName": {
+          "Ref": "DBName"
+        },
+        "AllocatedStorage": {
+          "Ref": "DBAllocatedStorage"
+        },
+        "DBInstanceClass": {
+          "Ref": "DBClass"
+        },
+        "Engine": "postgres",
+        "EngineVersion": "10.3",
+        "StorageType": "gp2",
         "StorageEncrypted": true,
-        "BackupRetentionPeriod":"35",
+        "BackupRetentionPeriod": "35",
         "MonitoringInterval": 10,
         "MonitoringRoleArn": {
           "Fn::GetAtt": [
@@ -1390,77 +1809,167 @@
             "Arn"
           ]
         },
-        "MasterUsername" : { "Ref" : "DBUsername" } ,
-        "MasterUserPassword" : { "Ref" : "DBPassword" },
-        "DBSubnetGroupName" : { "Ref" : "myDBSubnetGroup" },
-        "VPCSecurityGroups" : [ { "Fn::GetAtt" : [ "XactaSecurityGroup", "GroupId" ] } ]
+        "MasterUsername": {
+          "Ref": "DBUsername"
+        },
+        "MasterUserPassword": {
+          "Ref": "DBPassword"
+        },
+        "DBSubnetGroupName": {
+          "Ref": "myDBSubnetGroup"
+        },
+        "VPCSecurityGroups": [
+          {
+            "Fn::GetAtt": [
+              "XactaSecurityGroup",
+              "GroupId"
+            ]
+          }
+        ]
       }
     }
   },
   "Outputs": {
     "MyVPC": {
       "Description": "A reference to the created VPC",
-      "Value": {"Ref": "MyVPC"}
+      "Value": {
+        "Ref": "MyVPC"
+      }
     },
     "PublicSubnets": {
       "Description": "A list of the public subnets",
-      "Value": {"Fn::Join": [", ",[{"Ref": "PublicSubnet1"},{"Ref": "PublicSubnet2"}]]}},
+      "Value": {
+        "Fn::Join": [
+          ", ",
+          [
+            {
+              "Ref": "PublicSubnet1"
+            },
+            {
+              "Ref": "PublicSubnet2"
+            }
+          ]
+        ]
+      }
+    },
     "PrivateSubnets": {
       "Description": "A list of the private subnets",
-      "Value": {"Fn::Join": [", ",[{"Ref": "PrivateSubnet1"},{"Ref": "PrivateSubnet2"}]]}
+      "Value": {
+        "Fn::Join": [
+          ", ",
+          [
+            {
+              "Ref": "PrivateSubnet1"
+            },
+            {
+              "Ref": "PrivateSubnet2"
+            }
+          ]
+        ]
+      }
     },
     "InstanceSecurityGroup": {
       "Description": "Allow HTTP and SSH traffic Host attached",
-      "Value": {"Ref": "InstanceSecurityGroup"}
+      "Value": {
+        "Ref": "InstanceSecurityGroup"
+      }
     },
     "DataBucketName": {
-      "Value": {"Ref": "DataBucket"},
+      "Value": {
+        "Ref": "DataBucket"
+      },
       "Description": "Name of the sample Amazon S3 bucket with a logging configuration.\n Enable with Default AES256"
     },
     "LoggingBucketName": {
-      "Value": {"Ref": "LoggingBucket"},
+      "Value": {
+        "Ref": "LoggingBucket"
+      },
       "Description": "Name of the sample Amazon S3 bucket with a logging configuration.\n Enable with Default AES256"
     },
     "DoDAccessKey": {
-      "Value": {"Ref": "DoDKeys"},
+      "Value": {
+        "Ref": "DoDKeys"
+      },
       "Description": "AWSAccessKeyId of new user"
     },
     "DoDSecretKey": {
-      "Value": {"Fn::GetAtt": ["DoDKeys","SecretAccessKey"]},
+      "Value": {
+        "Fn::GetAtt": [
+          "DoDKeys",
+          "SecretAccessKey"
+        ]
+      },
       "Description": "AWSSecretKey of new user"
     },
     "Admin1AccessKey": {
-      "Value": {"Ref": "Admin1Keys"},
+      "Value": {
+        "Ref": "Admin1Keys"
+      },
       "Description": "AWSAccessKeyId of new user"
     },
     "Admin1SecretKey": {
-      "Value": {"Fn::GetAtt": ["Admin1Keys","SecretAccessKey"]},
+      "Value": {
+        "Fn::GetAtt": [
+          "Admin1Keys",
+          "SecretAccessKey"
+        ]
+      },
       "Description": "AWSSecretKey of new user"
     },
     "SecurityAccessKey": {
-      "Value": {"Ref": "SecurityKeys"},
+      "Value": {
+        "Ref": "SecurityKeys"
+      },
       "Description": "AWSAccessKeyId of new user"
     },
     "SecuritySecretKey": {
-      "Value": {"Fn::GetAtt": ["SecurityKeys","SecretAccessKey"]},
+      "Value": {
+        "Fn::GetAtt": [
+          "SecurityKeys",
+          "SecretAccessKey"
+        ]
+      },
       "Description": "AWSSecretKey of new user"
     },
     "CleanupSnapshot": {
-      "Value": {"Ref": "cleanupsnapshot"},
+      "Value": {
+        "Ref": "cleanupsnapshot"
+      },
       "Description": "cleanup-snapshot"
     },
     "CreateSnapshot": {
-      "Value": { "Ref": "cleanupsnapshot"},
+      "Value": {
+        "Ref": "cleanupsnapshot"
+      },
       "Description": "create-snapshot"
     },
     "JDBCConnectionString": {
-      "Description" : "JDBC connection string for database",
-      "Value" : { "Fn::Join": [ "", [ "jdbc:postgresql://",
-                                      { "Fn::GetAtt": [ "pgDB", "Endpoint.Address" ] },
-                                      ":",
-                                      { "Fn::GetAtt": [ "pgDB", "Endpoint.Port" ] },
-                                      "/",
-                                      { "Ref": "DBName" }]]}
+      "Description": "JDBC connection string for database",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "jdbc:postgresql://",
+            {
+              "Fn::GetAtt": [
+                "pgDB",
+                "Endpoint.Address"
+              ]
+            },
+            ":",
+            {
+              "Fn::GetAtt": [
+                "pgDB",
+                "Endpoint.Port"
+              ]
+            },
+            "/",
+            {
+              "Ref": "DBName"
+            }
+          ]
+        ]
+      }
     }
   }
 }
