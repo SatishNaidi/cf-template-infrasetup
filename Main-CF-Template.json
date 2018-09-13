@@ -1,5 +1,6 @@
 {
-  "Description": "To Create VPCs, along with 2 Private and 2 Public Subnets",
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "To Create the MSTaaS Platform VPC, with 2 Private and 2 Security Subnets",
   "Metadata": {
     "AWS::CloudFormation::Interface": {
       "ParameterGroups": [
@@ -18,17 +19,17 @@
           "Parameters": [
             "VpcCIDR",
             "AZs",
-            "PublicSubnet1CIDR",
-            "PublicSubnet2CIDR",
-            "PrivateSubnet1CIDR",
-            "PrivateSubnet2CIDR",
+            "SecuritySubnetAZ1CIDR",
+            "SecuritySubnetAZ2CIDR",
+            "PrivateSubnetAZ1CIDR",
+            "PrivateSubnetAZ2CIDR",
             "RetentionInDays",
             "VPCTrafficType"
           ]
         },
         {
           "Label": {
-            "default": "Buckets Configuation"
+            "default": "Buckets Configuration"
           },
           "Parameters": [
             "MoveToGlacierAfrDays",
@@ -86,39 +87,39 @@
   },
   "Parameters": {
     "aProjectName": {
-      "Description": "Project Name, STaaS",
+      "Description": "ATVantageMSTaaS",
       "Type": "String",
-      "Default": "STaaS"
+      "Default": "ATVantageMSTaaS"
     },
     "VpcCIDR": {
       "Description": "CIDR for the VPC",
       "Type": "String",
-      "Default": "10.192.0.0/16"
+      "Default": "10.210.0.0/16"
     },
     "AZs": {
       "Type": "List<AWS::EC2::AvailabilityZone::Name>",
       "Default": "us-east-1a,us-east-1b",
       "Description": "Select Two AZs, where the Public and Private Subnets will be deployed."
     },
-    "PublicSubnet1CIDR": {
+    "SecuritySubnetAZ1CIDR": {
       "Description": "CIDR for Public Subnet in AZ1",
       "Type": "String",
-      "Default": "10.192.10.0/24"
+      "Default": "10.210.10.0/24"
     },
-    "PublicSubnet2CIDR": {
+    "SecuritySubnetAZ2CIDR": {
       "Description": "CIDR for Public Subnet in AZ2",
       "Type": "String",
-      "Default": "10.192.11.0/24"
+      "Default": "10.210.11.0/24"
     },
-    "PrivateSubnet1CIDR": {
+    "PrivateSubnetAZ1CIDR": {
       "Description": "CIDR for private Subnet in AZ1",
       "Type": "String",
-      "Default": "10.192.20.0/24"
+      "Default": "10.210.20.0/24"
     },
-    "PrivateSubnet2CIDR": {
+    "PrivateSubnetAZ2CIDR": {
       "Description": "CIDR for private Subnet in AZ2",
       "Type": "String",
-      "Default": "10.192.21.0/24"
+      "Default": "10.210.21.0/24"
     },
     "RetentionInDays": {
       "Description": "Specifies the number of days you want to retain Flow log events?",
@@ -155,7 +156,7 @@
       ]
     },
     "SSHKeyName": {
-      "Default": "Mumbai",
+      "Default": "test",
       "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instances",
       "Type": "AWS::EC2::KeyPair::KeyName",
       "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
@@ -172,12 +173,12 @@
     },
     "OperatorEmail": {
       "Description": "Email address to notify when new logs are published.",
-      "Default": "youremail@domain.com",
+      "Default": "atvantagemstaas@ats.com",
       "Type": "String"
     },
     "BucketForLambdaCode": {
       "Description": "Select the bucket name where the lamdba fucntion code resides",
-      "Default": "aws-saketh-lambda",
+      "Default": "mybucket3636",
       "Type": "String"
     },
     "CleanupSnapShotCode": {
@@ -397,16 +398,10 @@
         "S3BucketName": {
           "Ref": "cloudtrail"
         },
-        "SnsTopicName": {
-          "Fn::GetAtt": [
-            "Topic",
-            "TopicName"
-          ]
-        },
         "IsLogging": true
       }
     },
-    "MyVPC": {
+    "AtVantageMSTaaS": {
       "Type": "AWS::EC2::VPC",
       "Properties": {
         "CidrBlock": {
@@ -431,7 +426,7 @@
           {
             "Key": "Name",
             "Value": {
-              "Ref": "aProjectName"
+              "Fn::Sub": "${aProjectName} IGW"
             }
           }
         ]
@@ -444,15 +439,15 @@
           "Ref": "InternetGateway"
         },
         "VpcId": {
-          "Ref": "MyVPC"
+          "Ref": "AtVantageMSTaaS"
         }
       }
     },
-    "PublicSubnet1": {
+    "SecuritySubnetAZ1": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "VpcId": {
-          "Ref": "MyVPC"
+          "Ref": "AtVantageMSTaaS"
         },
         "AvailabilityZone": {
           "Fn::Select": [
@@ -463,24 +458,24 @@
           ]
         },
         "CidrBlock": {
-          "Ref": "PublicSubnet1CIDR"
+          "Ref": "SecuritySubnetAZ1CIDR"
         },
         "MapPublicIpOnLaunch": true,
         "Tags": [
           {
             "Key": "Name",
             "Value": {
-              "Fn::Sub": "${aProjectName} Public Subnet (AZ1)"
+              "Fn::Sub": "${aProjectName} AZ1 - Security Subnet"
             }
           }
         ]
       }
     },
-    "PublicSubnet2": {
+    "SecuritySubnetAZ2": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "VpcId": {
-          "Ref": "MyVPC"
+          "Ref": "AtVantageMSTaaS"
         },
         "AvailabilityZone": {
           "Fn::Select": [
@@ -491,24 +486,24 @@
           ]
         },
         "CidrBlock": {
-          "Ref": "PublicSubnet2CIDR"
+          "Ref": "SecuritySubnetAZ2CIDR"
         },
         "MapPublicIpOnLaunch": true,
         "Tags": [
           {
             "Key": "Name",
             "Value": {
-              "Fn::Sub": "${aProjectName} Public Subnet (AZ2)"
+              "Fn::Sub": "${aProjectName} AZ2 - Security Subnet"
             }
           }
         ]
       }
     },
-    "PrivateSubnet1": {
+    "PrivateSubnetAZ1": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "VpcId": {
-          "Ref": "MyVPC"
+          "Ref": "AtVantageMSTaaS"
         },
         "AvailabilityZone": {
           "Fn::Select": [
@@ -519,24 +514,24 @@
           ]
         },
         "CidrBlock": {
-          "Ref": "PrivateSubnet1CIDR"
+          "Ref": "PrivateSubnetAZ1CIDR"
         },
         "MapPublicIpOnLaunch": false,
         "Tags": [
           {
             "Key": "Name",
             "Value": {
-              "Fn::Sub": "${aProjectName} Private Subnet (AZ1)"
+              "Fn::Sub": "${aProjectName} AZ1 - Private Subnet"
             }
           }
         ]
       }
     },
-    "PrivateSubnet2": {
+    "PrivateSubnetAZ2": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "VpcId": {
-          "Ref": "MyVPC"
+          "Ref": "AtVantageMSTaaS"
         },
         "AvailabilityZone": {
           "Fn::Select": [
@@ -547,14 +542,14 @@
           ]
         },
         "CidrBlock": {
-          "Ref": "PrivateSubnet2CIDR"
+          "Ref": "PrivateSubnetAZ2CIDR"
         },
         "MapPublicIpOnLaunch": false,
         "Tags": [
           {
             "Key": "Name",
             "Value": {
-              "Fn::Sub": "${aProjectName} Private Subnet (AZ2)"
+              "Fn::Sub": "${aProjectName} AZ2 - Private Subnet"
             }
           }
         ]
@@ -564,14 +559,14 @@
       "Type": "AWS::EC2::EIP",
       "DependsOn": "InternetGatewayAttachment",
       "Properties": {
-        "Domain": "MyVPC"
+        "Domain": "AtVantageMSTaaS"
       }
     },
     "NatGateway2EIP": {
       "Type": "AWS::EC2::EIP",
       "DependsOn": "InternetGatewayAttachment",
       "Properties": {
-        "Domain": "MyVPC"
+        "Domain": "AtVantageMSTaaS"
       }
     },
     "NatGateway1": {
@@ -584,7 +579,7 @@
           ]
         },
         "SubnetId": {
-          "Ref": "PublicSubnet1"
+          "Ref": "SecuritySubnetAZ1"
         }
       }
     },
@@ -598,21 +593,21 @@
           ]
         },
         "SubnetId": {
-          "Ref": "PublicSubnet2"
+          "Ref": "SecuritySubnetAZ2"
         }
       }
     },
-    "PublicRouteTable": {
+    "SecurityRouteTable": {
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
         "VpcId": {
-          "Ref": "MyVPC"
+          "Ref": "AtVantageMSTaaS"
         },
         "Tags": [
           {
             "Key": "Name",
             "Value": {
-              "Fn::Sub": "${aProjectName} Public Routes"
+              "Fn::Sub": "${aProjectName} Public Routes to Internet"
             }
           }
         ]
@@ -623,7 +618,7 @@
       "DependsOn": "InternetGatewayAttachment",
       "Properties": {
         "RouteTableId": {
-          "Ref": "PublicRouteTable"
+          "Ref": "SecurityRouteTable"
         },
         "DestinationCidrBlock": "0.0.0.0/0",
         "GatewayId": {
@@ -631,25 +626,25 @@
         }
       }
     },
-    "PublicSubnet1RouteTableAssociation": {
+    "SecuritySubnetAZ1RouteTableAssociation": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
         "RouteTableId": {
-          "Ref": "PublicRouteTable"
+          "Ref": "SecurityRouteTable"
         },
         "SubnetId": {
-          "Ref": "PublicSubnet1"
+          "Ref": "SecuritySubnetAZ1"
         }
       }
     },
-    "PublicSubnet2RouteTableAssociation": {
+    "SecuritySubnetAZ2RouteTableAssociation": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
         "RouteTableId": {
-          "Ref": "PublicRouteTable"
+          "Ref": "SecurityRouteTable"
         },
         "SubnetId": {
-          "Ref": "PublicSubnet2"
+          "Ref": "SecuritySubnetAZ2"
         }
       }
     },
@@ -657,38 +652,26 @@
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
         "VpcId": {
-          "Ref": "MyVPC"
+          "Ref": "AtVantageMSTaaS"
         },
         "Tags": [
           {
             "Key": "Name",
             "Value": {
-              "Fn::Sub": "${aProjectName} Private Routes (AZ1)"
+              "Fn::Sub": "${aProjectName} AZ1 - Private Routes"
             }
           }
         ]
       }
     },
-    "DefaultPrivateRoute1": {
-      "Type": "AWS::EC2::Route",
-      "Properties": {
-        "RouteTableId": {
-          "Ref": "PrivateRouteTable1"
-        },
-        "DestinationCidrBlock": "0.0.0.0/0",
-        "NatGatewayId": {
-          "Ref": "NatGateway1"
-        }
-      }
-    },
-    "PrivateSubnet1RouteTableAssociation": {
+    "PrivateSubnetAZ1RouteTableAssociation": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
         "RouteTableId": {
           "Ref": "PrivateRouteTable1"
         },
         "SubnetId": {
-          "Ref": "PrivateSubnet1"
+          "Ref": "PrivateSubnetAZ1"
         }
       }
     },
@@ -696,7 +679,7 @@
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
         "VpcId": {
-          "Ref": "MyVPC"
+          "Ref": "AtVantageMSTaaS"
         },
         "Tags": [
           {
@@ -708,204 +691,15 @@
         ]
       }
     },
-    "DefaultPrivateRoute2": {
-      "Type": "AWS::EC2::Route",
-      "Properties": {
-        "RouteTableId": {
-          "Ref": "PrivateRouteTable2"
-        },
-        "DestinationCidrBlock": "0.0.0.0/0",
-        "NatGatewayId": {
-          "Ref": "NatGateway2"
-        }
-      }
-    },
-    "PrivateSubnet2RouteTableAssociation": {
+    "PrivateSubnetAZ2RouteTableAssociation": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
         "RouteTableId": {
           "Ref": "PrivateRouteTable2"
         },
         "SubnetId": {
-          "Ref": "PrivateSubnet2"
+          "Ref": "PrivateSubnetAZ2"
         }
-      }
-    },
-    "InstanceSecurityGroup": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupDescription": "Allow HTTP and SSH traffic Host attached",
-        "VpcId": {
-          "Ref": "MyVPC"
-        },
-        "SecurityGroupIngress": [
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "22",
-            "ToPort": "22",
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "80",
-            "ToPort": "80",
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": 5432,
-            "ToPort": 5432,
-            "CidrIp": {
-              "Ref": "VpcCIDR"
-            }
-          }
-        ],
-        "SecurityGroupEgress": [
-          {
-            "IpProtocol": "tcp",
-            "FromPort": "1",
-            "ToPort": "65535",
-            "CidrIp": "0.0.0.0/0"
-          }
-        ],
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "InstanceSecurityGroup"
-          }
-        ]
-      }
-    },
-    "FirewallSecurityGroup": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupName": "Barracuda-Security-Group",
-        "GroupDescription": "Allow Inbound Traffic to Firewall",
-        "VpcId": {
-          "Ref": "MyVPC"
-        },
-        "SecurityGroupIngress": [
-          {
-            "IpProtocol": "tcp",
-            "FromPort": 807,
-            "ToPort": 807,
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": 806,
-            "ToPort": 806,
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": 22,
-            "ToPort": 22,
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": 443,
-            "ToPort": 443,
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": 691,
-            "ToPort": 691,
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "udp",
-            "FromPort": 691,
-            "ToPort": 691,
-            "CidrIp": "0.0.0.0/0"
-          }
-        ],
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "Barracuda-Security-Group"
-          }
-        ]
-      }
-    },
-    "SplunkSecurityGroup": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupName": "Splunk-Security-Group",
-        "GroupDescription": "Allow Inbound traffic to Splunk",
-        "VpcId": {
-          "Ref": "MyVPC"
-        },
-        "SecurityGroupIngress": [
-          {
-            "IpProtocol": "tcp",
-            "FromPort": 8000,
-            "ToPort": 8000,
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": 9997,
-            "ToPort": 9997,
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": 8089,
-            "ToPort": 8089,
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": 8088,
-            "ToPort": 8088,
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": 22,
-            "ToPort": 22,
-            "CidrIp": "0.0.0.0/0"
-          }
-        ],
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "Splunk-Security-Group"
-          }
-        ]
-      }
-    },
-    "XactaSecurityGroup": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupName": "Xacta-Security-Group",
-        "GroupDescription": "Allow Inbound traffic to Xacta",
-        "VpcId": {
-          "Ref": "MyVPC"
-        },
-        "SecurityGroupIngress": [
-          {
-            "IpProtocol": "tcp",
-            "FromPort": 443,
-            "ToPort": 443,
-            "CidrIp": "0.0.0.0/0"
-          },
-          {
-            "IpProtocol": "tcp",
-            "FromPort": 22,
-            "ToPort": 22,
-            "CidrIp": "0.0.0.0/0"
-          }
-        ],
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "Xacta-Security-Group"
-          }
-        ]
       }
     },
     "FlowLogRole": {
@@ -967,7 +761,7 @@
         },
         "LogGroupName": "FlowLogGroup",
         "ResourceId": {
-          "Ref": "MyVPC"
+          "Ref": "AtVantageMSTaaS"
         },
         "ResourceType": "VPC",
         "TrafficType": {
@@ -1126,7 +920,7 @@
         },
         "RouteTableIds": [
           {
-            "Ref": "PublicRouteTable"
+            "Ref": "SecurityRouteTable"
           },
           {
             "Ref": "PrivateRouteTable1"
@@ -1148,7 +942,7 @@
           ]
         },
         "VpcId": {
-          "Ref": "MyVPC"
+          "Ref": "AtVantageMSTaaS"
         }
       }
     },
@@ -1498,90 +1292,6 @@
         }
       }
     },
-    "MySplunkInstance1": {
-      "Type": "AWS::EC2::Instance",
-      "Properties": {
-        "ImageId": "ami-cfe4b2b0",
-        "KeyName": {
-          "Ref": "SSHKeyName"
-        },
-        "SubnetId": {
-          "Ref": "PrivateSubnet1"
-        },
-        "InstanceType": "t2.micro",
-        "SecurityGroupIds": [
-          {
-            "Ref": "SplunkSecurityGroup"
-          }
-        ],
-        "Tags": [
-          {
-            "Key": "Backup",
-            "Value": "Yes"
-          },
-          {
-            "Key": "Name",
-            "Value": "SplunkInstance1"
-          }
-        ]
-      }
-    },
-    "MySplunkInstance2": {
-      "Type": "AWS::EC2::Instance",
-      "Properties": {
-        "ImageId": "ami-cfe4b2b0",
-        "KeyName": {
-          "Ref": "SSHKeyName"
-        },
-        "SubnetId": {
-          "Ref": "PrivateSubnet2"
-        },
-        "InstanceType": "t2.micro",
-        "SecurityGroupIds": [
-          {
-            "Ref": "SplunkSecurityGroup"
-          }
-        ],
-        "Tags": [
-          {
-            "Key": "Backup",
-            "Value": "Yes"
-          },
-          {
-            "Key": "Name",
-            "Value": "SplunkInstance2"
-          }
-        ]
-      }
-    },
-    "Barracuda": {
-      "Type": "AWS::EC2::Instance",
-      "Properties": {
-        "ImageId": "ami-cfe4b2b0",
-        "KeyName": {
-          "Ref": "SSHKeyName"
-        },
-        "SubnetId": {
-          "Ref": "PublicSubnet1"
-        },
-        "InstanceType": "t2.medium",
-        "SecurityGroupIds": [
-          {
-            "Ref": "FirewallSecurityGroup"
-          }
-        ],
-        "Tags": [
-          {
-            "Key": "Backup",
-            "Value": "Yes"
-          },
-          {
-            "Key": "Name",
-            "Value": "Barracuda Instance"
-          }
-        ]
-      }
-    },
     "LambdaExecutionRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -1749,91 +1459,26 @@
         }
       }
     },
-    "RdsMonitoringRole": {
-      "Type": "AWS::IAM::Role",
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Sid": "",
-              "Effect": "Allow",
-              "Principal": {
-                "Service": "monitoring.rds.amazonaws.com"
-              },
-              "Action": "sts:AssumeRole"
-            }
-          ]
-        },
-        "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
-        ],
-        "Path": "/"
-      }
-    },
-    "myDBSubnetGroup": {
+    "MStaaSDBSubnetGroup": {
       "Type": "AWS::RDS::DBSubnetGroup",
       "Properties": {
         "DBSubnetGroupDescription": "DB Private Subnet",
         "SubnetIds": [
           {
-            "Ref": "PrivateSubnet1"
+            "Ref": "PrivateSubnetAZ1"
           },
           {
-            "Ref": "PrivateSubnet2"
-          }
-        ]
-      }
-    },
-    "pgDB": {
-      "Type": "AWS::RDS::DBInstance",
-      "Properties": {
-        "DBName": {
-          "Ref": "DBName"
-        },
-        "AllocatedStorage": {
-          "Ref": "DBAllocatedStorage"
-        },
-        "DBInstanceClass": {
-          "Ref": "DBClass"
-        },
-        "Engine": "postgres",
-        "EngineVersion": "10.3",
-        "StorageType": "gp2",
-        "StorageEncrypted": true,
-        "BackupRetentionPeriod": "35",
-        "MonitoringInterval": 10,
-        "MonitoringRoleArn": {
-          "Fn::GetAtt": [
-            "RdsMonitoringRole",
-            "Arn"
-          ]
-        },
-        "MasterUsername": {
-          "Ref": "DBUsername"
-        },
-        "MasterUserPassword": {
-          "Ref": "DBPassword"
-        },
-        "DBSubnetGroupName": {
-          "Ref": "myDBSubnetGroup"
-        },
-        "VPCSecurityGroups": [
-          {
-            "Fn::GetAtt": [
-              "XactaSecurityGroup",
-              "GroupId"
-            ]
+            "Ref": "PrivateSubnetAZ2"
           }
         ]
       }
     }
   },
   "Outputs": {
-    "MyVPC": {
+    "AtVantageMSTaaS": {
       "Description": "A reference to the created VPC",
       "Value": {
-        "Ref": "MyVPC"
+        "Ref": "AtVantageMSTaaS"
       }
     },
     "PublicSubnets": {
@@ -1843,10 +1488,10 @@
           ", ",
           [
             {
-              "Ref": "PublicSubnet1"
+              "Ref": "SecuritySubnetAZ1"
             },
             {
-              "Ref": "PublicSubnet2"
+              "Ref": "SecuritySubnetAZ2"
             }
           ]
         ]
@@ -1859,32 +1504,32 @@
           ", ",
           [
             {
-              "Ref": "PrivateSubnet1"
+              "Ref": "PrivateSubnetAZ1"
             },
             {
-              "Ref": "PrivateSubnet2"
+              "Ref": "PrivateSubnetAZ2"
             }
           ]
         ]
-      }
-    },
-    "InstanceSecurityGroup": {
-      "Description": "Allow HTTP and SSH traffic Host attached",
-      "Value": {
-        "Ref": "InstanceSecurityGroup"
       }
     },
     "DataBucketName": {
       "Value": {
         "Ref": "DataBucket"
       },
-      "Description": "Name of the sample Amazon S3 bucket with a logging configuration.\n Enable with Default AES256"
+      "Description": "Name of the Data Storage Amazon S3 bucket with a logging configuration.\n Enabled with Default AES256"
     },
     "LoggingBucketName": {
       "Value": {
         "Ref": "LoggingBucket"
       },
-      "Description": "Name of the sample Amazon S3 bucket with a logging configuration.\n Enable with Default AES256"
+      "Description": "Name of the Logging Amazon S3 bucket with a logging configuration.\n Enabled with Default AES256"
+    },
+    "CloudTrailBucketName": {
+      "Value": {
+        "Ref": "cloudtrail"
+      },
+      "Description": "Name of the CloudTrail Amazon S3 bucket with a logging configuration.\n Enabled with Default AES256"
     },
     "DoDAccessKey": {
       "Value": {
@@ -1943,32 +1588,159 @@
       },
       "Description": "create-snapshot"
     },
-    "JDBCConnectionString": {
-      "Description": "JDBC connection string for database",
+    "VPCId": {
+      "Description": "MStaaS VPC ID",
       "Value": {
-        "Fn::Join": [
-          "",
-          [
-            "jdbc:postgresql://",
-            {
-              "Fn::GetAtt": [
-                "pgDB",
-                "Endpoint.Address"
-              ]
-            },
-            ":",
-            {
-              "Fn::GetAtt": [
-                "pgDB",
-                "Endpoint.Port"
-              ]
-            },
-            "/",
-            {
-              "Ref": "DBName"
-            }
-          ]
+        "Ref": "AtVantageMSTaaS"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-MStaaSVPCID"
+        }
+      }
+    },
+    "SecuritySubnetAZ1": {
+      "Description": "The subnet ID to use for Firewall",
+      "Value": {
+        "Ref": "SecuritySubnetAZ1"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-SecuritySubnetAZ1ID"
+        }
+      }
+    },
+    "SecuritySubnetAZ2": {
+      "Description": "The subnet ID to use for Firewall",
+      "Value": {
+        "Ref": "SecuritySubnetAZ2"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-SecuritySubnetAZ2ID"
+        }
+      }
+    },
+    "PrivateSubnetAZ1": {
+      "Description": "The subnet ID to use for Internal Servers",
+      "Value": {
+        "Ref": "PrivateSubnetAZ1"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-PrivateSubnetAZ1ID"
+        }
+      }
+    },
+    "PrivateSubnetAZ2": {
+      "Description": "The subnet ID to use for Internal Servers",
+      "Value": {
+        "Ref": "PrivateSubnetAZ2"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-PrivateSubnetAZ2ID"
+        }
+      }
+    },
+    "PrivateSubnetAZ1AZ": {
+      "Description": "The AZ of Private Subnet 1",
+      "Value": {
+        "Fn::GetAtt": [
+          "PrivateSubnetAZ1",
+          "AvailabilityZone"
         ]
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-MStaaSPvtSubnetAZ1"
+        }
+      }
+    },
+    "SecuritySubnetAZ1AZ": {
+      "Description": "The AZ of Security Subnet 1",
+      "Value": {
+        "Fn::GetAtt": [
+          "SecuritySubnetAZ1",
+          "AvailabilityZone"
+        ]
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-MStaaSSecuritySubnetAZ1"
+        }
+      }
+    },
+    "PrivateSubnetAZ2AZ": {
+      "Description": "The AZ of Private Subnet 2",
+      "Value": {
+        "Fn::GetAtt": [
+          "PrivateSubnetAZ2",
+          "AvailabilityZone"
+        ]
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-MStaaSPvtSubnetAZ2"
+        }
+      }
+    },
+    "SecuritySubnetAZ2AZ": {
+      "Description": "The AZ of Security Subnet 2",
+      "Value": {
+        "Fn::GetAtt": [
+          "SecuritySubnetAZ2",
+          "AvailabilityZone"
+        ]
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-MStaaSSecuritySubnetAZ2"
+        }
+      }
+    },
+    "SecurityRouteTable": {
+      "Description": "The subnet ID to use for Firewall",
+      "Value": {
+        "Ref": "SecurityRouteTable"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-SecurityRouteTable"
+        }
+      }
+    },
+    "PrivateRouteTable1AZ1": {
+      "Description": "The subnet ID to use for Firewall",
+      "Value": {
+        "Ref": "PrivateRouteTable1"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-PrivateRouteTable1AZ1"
+        }
+      }
+    },
+    "PrivateRouteTable2AZ2": {
+      "Description": "The subnet ID to use for Internal Servers",
+      "Value": {
+        "Ref": "PrivateRouteTable2"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-PrivateRouteTable2AZ2"
+        }
+      }
+    },
+    "MStaaSDBSubnetGroup": {
+      "Description": "The subnet Group to use for RDS",
+      "Value": {
+        "Ref": "MStaaSDBSubnetGroup"
+      },
+      "Export": {
+        "Name": {
+          "Fn::Sub": "${AWS::StackName}-DBSubnetGroup"
+        }
       }
     }
   }
