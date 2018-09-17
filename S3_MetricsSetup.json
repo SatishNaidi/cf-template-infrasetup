@@ -1,0 +1,133 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+    "Description" : "S3 Notification Setup",
+    "Metadata": {
+        "AWS::CloudFormation::Interface": {
+          "ParameterGroups": [
+            {
+              "Label": {
+                "default": "S3 Monitoring through Cloud watch"
+              },
+              "Parameters": [
+                "CloudWatchAlarmStatistic",
+                "DataPoints",
+                "Periodicity",
+                "BucketName",
+                "CompareOperator",
+                "BucketSize"
+              ]
+            }
+          ]
+        }
+      },
+    "Parameters" : {
+        "CompareOperator": {
+            "Default": "GreaterThanOrEqualToThreshold",
+            "Description": "S3 Bucket Storage class",
+            "Type": "String",
+            "AllowedValues": [
+                "GreaterThanOrEqualToThreshold",
+                "GreaterThanThreshold",
+                "LessThanThreshold",
+                "LessThanOrEqualToThreshold"
+            ]
+        },
+        "DataPoints": {
+            "Default": "1",
+            "Description": "Mention the data points",
+            "Type": "Number",
+            "ConstraintDescription": "Must be an integer"
+        },
+        "EmailID": {
+            "Default": "youremail@domain.com",
+            "Description": "Email ID to recieve Notification",
+            "Type": "String",
+            "ConstraintDescription": "Must be a valid Email ID"
+        },
+        "Periodicity": {
+            "Default": "300",
+            "Description": "Select the number of seconds for which the metrics needs to Evaluated",
+            "Type": "Number",
+            "AllowedValues": [
+                "60",
+                "300",
+                "900",
+                "3600",
+                "21600",
+                "86400"
+            ],
+            "ConstraintDescription": "Must be one of the allowed Values"
+        },
+        "BucketName": {
+            "Default": "BucketName",
+            "Description": "Bucket Name",
+            "Type": "String",
+            "ConstraintDescription": "Must be an Existing Bucket name"
+        },
+        "BucketSize": {
+            "Default": "100",
+            "Description": "Mention the size of the bucket to set the threshold in KBs",
+            "Type": "Number",
+            "ConstraintDescription": "Must be an integer"
+        }
+    },
+    "Resources": {
+        "MySNSTopic": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+              "Subscription": [
+                {
+                  "Endpoint": {
+                    "Ref": "EmailID"
+                  },
+                  "Protocol": "email"
+                }
+              ]
+            }
+        },
+        "CPUUtilizationAlarm": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "MetricName": "BucketSizeBytes",
+                "AlarmDescription": "Alarm to check the size of an S3 bucket and send a notification",
+                "Namespace": "AWS/S3",
+                "AlarmActions": [
+                    {
+                      "Ref": "MySNSTopic"
+                    }
+                ],
+                "Statistic": "Average",
+                "Period": {
+                    "Ref":"Periodicity"
+                },
+                "EvaluationPeriods": {
+                        "Ref":"DataPoints"
+                },
+                "Threshold":  {
+                    "Ref":"BucketSize"
+                },
+                "ComparisonOperator": {
+                    "Ref": "CompareOperator"
+                },
+                "Dimensions": [
+                    {
+                        "Name": "Bucket",
+                        "Value": "aws-saketh-lambda"
+                    },
+                    {
+                        "Name": "StorageType",
+                        "Value": "StandardStorage"
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "CPUUtilizationAlarm": {
+            "Value": {
+                "Ref": "CPUUtilizationAlarm"
+            },
+            "Description": "CPUUtilizationAlarm"
+        }
+    }
+}
