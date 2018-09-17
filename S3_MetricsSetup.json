@@ -85,7 +85,7 @@
               ]
             }
         },
-        "CPUUtilizationAlarm": {
+        "BucketSizeMonitoringAlarm": {
             "Type": "AWS::CloudWatch::Alarm",
             "Properties": {
                 "MetricName": "BucketSizeBytes",
@@ -123,11 +123,11 @@
         }
     },
     "Outputs": {
-        "CPUUtilizationAlarm": {
+        "BucketSizeMonitoringAlarm": {
             "Value": {
-                "Ref": "CPUUtilizationAlarm"
+                "Ref": "BucketSizeMonitoringAlarm"
             },
-            "Description": "CPUUtilizationAlarm"
+            "Description": "BucketSizeMonitoringAlarm"
         }
     }
 }
