@@ -6,10 +6,15 @@
       "ParameterGroups": [
         {
           "Label": {
-            "default": "Project and Tag"
+            "default": "TaggingTheResources"
           },
           "Parameters": [
-            "aProjectName"
+            "OrgName",
+            "ProjectName",
+            "Environment",
+            "OwnerInformation",
+            "BillingInformation",
+            "Provisioner"
           ]
         },
         {
@@ -86,11 +91,6 @@
     }
   },
   "Parameters": {
-    "aProjectName": {
-      "Description": "ATVantageMSTaaS",
-      "Type": "String",
-      "Default": "ATVantageMSTaaS"
-    },
     "VpcCIDR": {
       "Description": "CIDR for the VPC",
       "Type": "String",
@@ -246,6 +246,43 @@
       "MinValue": "5",
       "MaxValue": "6144",
       "ConstraintDescription": "must be between 5+"
+    },
+    "OrgName": {
+      "Description": "Enter the Organization Name",
+      "Default": "",
+      "Type": "String"
+    },
+    "ProjectName": {
+      "Description": "Enter the Project Name",
+      "Default": "ATVantageMSTaaS",
+      "Type": "String"
+    },
+    "Environment": {
+      "Description": "Enter the Environment Name",
+      "Default": "Prod",
+      "Type": "String",
+      "AllowedValues": [
+        "Prod",
+        "Dev",
+        "Test",
+        "QA",
+        "Pre-Prod"
+      ]
+    },
+    "OwnerInformation": {
+      "Description": "Enter the Owner Name who is owning this stack",
+      "Default": "",
+      "Type": "String"
+    },
+    "BillingInformation": {
+      "Description": "Enter the Billing department id or Costcenter",
+      "Default": "",
+      "Type": "String"
+    },
+    "Provisioner": {
+      "Description": "Enter the Provisioner type if it has provisioned through marketplace or others",
+      "Default": "",
+      "Type": "String"
     }
   },
   "Resources": {
@@ -411,9 +448,39 @@
         "EnableDnsHostnames": true,
         "Tags": [
           {
-            "Key": "Name",
+            "Key": "OrgName",
             "Value": {
-              "Ref": "aProjectName"
+              "Ref": "OrgName"
+            }
+          },
+          {
+            "Key": "ProjectName",
+            "Value": {
+              "Ref": "ProjectName"
+            }
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "OwnerInformation",
+            "Value": {
+              "Ref": "OwnerInformation"
+            }
+          },
+          {
+            "Key": "BillingInformation",
+            "Value": {
+              "Ref": "BillingInformation"
+            }
+          },
+          {
+            "Key": "Provisioner",
+            "Value": {
+              "Ref": "Provisioner"
             }
           }
         ]
@@ -426,7 +493,43 @@
           {
             "Key": "Name",
             "Value": {
-              "Fn::Sub": "${aProjectName} IGW"
+              "Fn::Sub": "${ProjectName} IGW"
+            }
+          },
+          {
+            "Key": "OrgName",
+            "Value": {
+              "Ref": "OrgName"
+            }
+          },
+          {
+            "Key": "ProjectName",
+            "Value": {
+              "Ref": "ProjectName"
+            }
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "OwnerInformation",
+            "Value": {
+              "Ref": "OwnerInformation"
+            }
+          },
+          {
+            "Key": "BillingInformation",
+            "Value": {
+              "Ref": "BillingInformation"
+            }
+          },
+          {
+            "Key": "Provisioner",
+            "Value": {
+              "Ref": "Provisioner"
             }
           }
         ]
@@ -465,7 +568,43 @@
           {
             "Key": "Name",
             "Value": {
-              "Fn::Sub": "${aProjectName} AZ1 - Security Subnet"
+              "Fn::Sub": "${ProjectName} AZ1 - Security Subnet"
+            }
+          },
+          {
+            "Key": "OrgName",
+            "Value": {
+              "Ref": "OrgName"
+            }
+          },
+          {
+            "Key": "ProjectName",
+            "Value": {
+              "Ref": "ProjectName"
+            }
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "OwnerInformation",
+            "Value": {
+              "Ref": "OwnerInformation"
+            }
+          },
+          {
+            "Key": "BillingInformation",
+            "Value": {
+              "Ref": "BillingInformation"
+            }
+          },
+          {
+            "Key": "Provisioner",
+            "Value": {
+              "Ref": "Provisioner"
             }
           }
         ]
@@ -493,7 +632,43 @@
           {
             "Key": "Name",
             "Value": {
-              "Fn::Sub": "${aProjectName} AZ2 - Security Subnet"
+              "Fn::Sub": "${ProjectName} AZ2 - Security Subnet"
+            }
+          },
+          {
+            "Key": "OrgName",
+            "Value": {
+              "Ref": "OrgName"
+            }
+          },
+          {
+            "Key": "ProjectName",
+            "Value": {
+              "Ref": "ProjectName"
+            }
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "OwnerInformation",
+            "Value": {
+              "Ref": "OwnerInformation"
+            }
+          },
+          {
+            "Key": "BillingInformation",
+            "Value": {
+              "Ref": "BillingInformation"
+            }
+          },
+          {
+            "Key": "Provisioner",
+            "Value": {
+              "Ref": "Provisioner"
             }
           }
         ]
@@ -521,7 +696,43 @@
           {
             "Key": "Name",
             "Value": {
-              "Fn::Sub": "${aProjectName} AZ1 - Private Subnet"
+              "Fn::Sub": "${ProjectName} AZ1 - Private Subnet"
+            }
+          },
+          {
+            "Key": "OrgName",
+            "Value": {
+              "Ref": "OrgName"
+            }
+          },
+          {
+            "Key": "ProjectName",
+            "Value": {
+              "Ref": "ProjectName"
+            }
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "OwnerInformation",
+            "Value": {
+              "Ref": "OwnerInformation"
+            }
+          },
+          {
+            "Key": "BillingInformation",
+            "Value": {
+              "Ref": "BillingInformation"
+            }
+          },
+          {
+            "Key": "Provisioner",
+            "Value": {
+              "Ref": "Provisioner"
             }
           }
         ]
@@ -549,7 +760,43 @@
           {
             "Key": "Name",
             "Value": {
-              "Fn::Sub": "${aProjectName} AZ2 - Private Subnet"
+              "Fn::Sub": "${ProjectName} AZ2 - Private Subnet"
+            }
+          },
+          {
+            "Key": "OrgName",
+            "Value": {
+              "Ref": "OrgName"
+            }
+          },
+          {
+            "Key": "ProjectName",
+            "Value": {
+              "Ref": "ProjectName"
+            }
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "OwnerInformation",
+            "Value": {
+              "Ref": "OwnerInformation"
+            }
+          },
+          {
+            "Key": "BillingInformation",
+            "Value": {
+              "Ref": "BillingInformation"
+            }
+          },
+          {
+            "Key": "Provisioner",
+            "Value": {
+              "Ref": "Provisioner"
             }
           }
         ]
@@ -580,7 +827,45 @@
         },
         "SubnetId": {
           "Ref": "SecuritySubnetAZ1"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "OrgName",
+            "Value": {
+              "Ref": "OrgName"
+            }
+          },
+          {
+            "Key": "ProjectName",
+            "Value": {
+              "Ref": "ProjectName"
+            }
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "OwnerInformation",
+            "Value": {
+              "Ref": "OwnerInformation"
+            }
+          },
+          {
+            "Key": "BillingInformation",
+            "Value": {
+              "Ref": "BillingInformation"
+            }
+          },
+          {
+            "Key": "Provisioner",
+            "Value": {
+              "Ref": "Provisioner"
+            }
+          }
+        ]
       }
     },
     "NatGateway2": {
@@ -594,7 +879,45 @@
         },
         "SubnetId": {
           "Ref": "SecuritySubnetAZ2"
-        }
+        },
+        "Tags": [
+          {
+            "Key": "OrgName",
+            "Value": {
+              "Ref": "OrgName"
+            }
+          },
+          {
+            "Key": "ProjectName",
+            "Value": {
+              "Ref": "ProjectName"
+            }
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "OwnerInformation",
+            "Value": {
+              "Ref": "OwnerInformation"
+            }
+          },
+          {
+            "Key": "BillingInformation",
+            "Value": {
+              "Ref": "BillingInformation"
+            }
+          },
+          {
+            "Key": "Provisioner",
+            "Value": {
+              "Ref": "Provisioner"
+            }
+          }
+        ]
       }
     },
     "SecurityRouteTable": {
@@ -607,7 +930,43 @@
           {
             "Key": "Name",
             "Value": {
-              "Fn::Sub": "${aProjectName} Public Routes to Internet"
+              "Fn::Sub": "${ProjectName} Public Routes to Internet"
+            }
+          },
+          {
+            "Key": "OrgName",
+            "Value": {
+              "Ref": "OrgName"
+            }
+          },
+          {
+            "Key": "ProjectName",
+            "Value": {
+              "Ref": "ProjectName"
+            }
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "OwnerInformation",
+            "Value": {
+              "Ref": "OwnerInformation"
+            }
+          },
+          {
+            "Key": "BillingInformation",
+            "Value": {
+              "Ref": "BillingInformation"
+            }
+          },
+          {
+            "Key": "Provisioner",
+            "Value": {
+              "Ref": "Provisioner"
             }
           }
         ]
@@ -658,7 +1017,43 @@
           {
             "Key": "Name",
             "Value": {
-              "Fn::Sub": "${aProjectName} AZ1 - Private Routes"
+              "Fn::Sub": "${ProjectName} AZ1 - Private Routes"
+            }
+          },
+          {
+            "Key": "OrgName",
+            "Value": {
+              "Ref": "OrgName"
+            }
+          },
+          {
+            "Key": "ProjectName",
+            "Value": {
+              "Ref": "ProjectName"
+            }
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "OwnerInformation",
+            "Value": {
+              "Ref": "OwnerInformation"
+            }
+          },
+          {
+            "Key": "BillingInformation",
+            "Value": {
+              "Ref": "BillingInformation"
+            }
+          },
+          {
+            "Key": "Provisioner",
+            "Value": {
+              "Ref": "Provisioner"
             }
           }
         ]
@@ -685,7 +1080,43 @@
           {
             "Key": "Name",
             "Value": {
-              "Fn::Sub": "${aProjectName} Private Routes (AZ2)"
+              "Fn::Sub": "${ProjectName} Private Routes (AZ2)"
+            }
+          },
+          {
+            "Key": "OrgName",
+            "Value": {
+              "Ref": "OrgName"
+            }
+          },
+          {
+            "Key": "ProjectName",
+            "Value": {
+              "Ref": "ProjectName"
+            }
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "OwnerInformation",
+            "Value": {
+              "Ref": "OwnerInformation"
+            }
+          },
+          {
+            "Key": "BillingInformation",
+            "Value": {
+              "Ref": "BillingInformation"
+            }
+          },
+          {
+            "Key": "Provisioner",
+            "Value": {
+              "Ref": "Provisioner"
             }
           }
         ]
@@ -810,7 +1241,43 @@
           {
             "Key": "Project",
             "Value": {
-              "Fn::Sub": "${aProjectName}"
+              "Fn::Sub": "${ProjectName}"
+            }
+          },
+          {
+            "Key": "OrgName",
+            "Value": {
+              "Ref": "OrgName"
+            }
+          },
+          {
+            "Key": "ProjectName",
+            "Value": {
+              "Ref": "ProjectName"
+            }
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "OwnerInformation",
+            "Value": {
+              "Ref": "OwnerInformation"
+            }
+          },
+          {
+            "Key": "BillingInformation",
+            "Value": {
+              "Ref": "BillingInformation"
+            }
+          },
+          {
+            "Key": "Provisioner",
+            "Value": {
+              "Ref": "Provisioner"
             }
           }
         ],
@@ -1368,7 +1835,45 @@
         },
         "Timeout": 3,
         "Runtime": "python2.7",
-        "Description": "lambda-cleanup-snapshot"
+        "Description": "lambda-cleanup-snapshot",
+        "Tags": [
+          {
+            "Key": "OrgName",
+            "Value": {
+              "Ref": "OrgName"
+            }
+          },
+          {
+            "Key": "ProjectName",
+            "Value": {
+              "Ref": "ProjectName"
+            }
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "OwnerInformation",
+            "Value": {
+              "Ref": "OwnerInformation"
+            }
+          },
+          {
+            "Key": "BillingInformation",
+            "Value": {
+              "Ref": "BillingInformation"
+            }
+          },
+          {
+            "Key": "Provisioner",
+            "Value": {
+              "Ref": "Provisioner"
+            }
+          }
+        ]
       }
     },
     "createsnapshot": {
@@ -1392,7 +1897,45 @@
         },
         "Timeout": 3,
         "Runtime": "python2.7",
-        "Description": "lambda-cleanup-snapshot"
+        "Description": "lambda-cleanup-snapshot",
+        "Tags": [
+          {
+            "Key": "OrgName",
+            "Value": {
+              "Ref": "OrgName"
+            }
+          },
+          {
+            "Key": "ProjectName",
+            "Value": {
+              "Ref": "ProjectName"
+            }
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "OwnerInformation",
+            "Value": {
+              "Ref": "OwnerInformation"
+            }
+          },
+          {
+            "Key": "BillingInformation",
+            "Value": {
+              "Ref": "BillingInformation"
+            }
+          },
+          {
+            "Key": "Provisioner",
+            "Value": {
+              "Ref": "Provisioner"
+            }
+          }
+        ]
       }
     },
     "ScheduledRule": {
@@ -1469,6 +2012,44 @@
           },
           {
             "Ref": "PrivateSubnetAZ2"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "OrgName",
+            "Value": {
+              "Ref": "OrgName"
+            }
+          },
+          {
+            "Key": "ProjectName",
+            "Value": {
+              "Ref": "ProjectName"
+            }
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "OwnerInformation",
+            "Value": {
+              "Ref": "OwnerInformation"
+            }
+          },
+          {
+            "Key": "BillingInformation",
+            "Value": {
+              "Ref": "BillingInformation"
+            }
+          },
+          {
+            "Key": "Provisioner",
+            "Value": {
+              "Ref": "Provisioner"
+            }
           }
         ]
       }
